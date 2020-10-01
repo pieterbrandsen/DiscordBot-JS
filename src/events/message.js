@@ -86,7 +86,7 @@ Voer commando's uit in de server uit.`);
 				return message.channel.send(
 					new MessageEmbed()
 						.setColor(config.err_colour)
-						.setDescription(`:x: Please wait ${timeLeft.toFixed(1)} second(s) before reusing the \`${command.name}\` command.`)
+						.setDescription(`:x: Alsjeblieft wacht ${timeLeft.toFixed(1)} seconden bevoor je \`${command.name}\` opnieuw gebruikt.`)
 						.setFooter(guild.name, guild.iconURL())
 				);
 			}

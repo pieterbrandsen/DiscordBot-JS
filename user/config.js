@@ -1,5 +1,5 @@
 module.exports = {
-	prefix: '/',
+	prefix: '!',
 	name: 'RedeWijk Support',
 	activities: ['Redewijk Roleplay'],
 	activity_types: ['WATCHING'],
@@ -7,13 +7,34 @@ module.exports = {
 	err_colour: '#E74C3C',
 	cooldown: 3,
 
-	guild: '758332017976016937', // ID of your guild
-	staff_role: '758642877089185803', // ID of your Support Team role
+	guild: '725062629541937224', // ID of your guild
+	staff_role: '725241568302333973', // ID of your Support Team role
 
-	suggestionChannelId: ["760871983209644032", "760872065846476820", "760872211086704660", "760872280376737812"],
+	announcementsChannelId: "760136360732131339",
+	generalChannelId: "760052816197844993",
+	ticketCreateChannelId: "751778285507313666",
+	suggestionChannelId: ["751770087366721597"],
+	
+
+	welcome: {
+		enabled: true,
+		channelId: "751770026733862913",
+		DMMessage: `Hallotjes {{ tag }}.
+Welkom op **{{ guild }}**, check gerust eens {{ announcements }} en kom gezellig mee praten in {{ general }}.
+Als er nog wat is, maak even een ticket aan in {{ ticketChannel }} en dan zijn we zo snel mogelijk bij je. 😊
+\nMet vriendelijke groeten, het staff team van **{{ guild }}**`,
+		message: ["Hoi {{ tag }}, panda's zijn cool.", "Hoi {{ tag }}, apen zijn cool.", "Hoi {{ tag }}, konijnen zijn cool."]
+	},
+	leave: {
+		enabled: true,
+		message: `Jammer om te zien dat je de server verlaten hebt.
+\nAls je nog terug wilt komen kan dit, hier is een invite zodat je terug kan komen.
+\n\nInvite: {{ invite }}`
+	},
+	
 
 	tickets: {
-		category: '760864285886513184', // ID of your tickets category
+		category: '760456192551682058', // ID of your tickets category
 		send_img: true,
 		ping: 'here',
 		text: `Hallotjes, {{ tag }}!
@@ -50,11 +71,11 @@ module.exports = {
 			keep_for: 7
 		},
 		discord: {
-			enabled: true,
-			channel: '759085501944299531' // ID of your log channel
+			enabled: false,
+			channel: '751778285507313666' // ID of your log channel
 		}
 	},
 	
 	debug: false,
-	updater: true
+	updater: false
 };

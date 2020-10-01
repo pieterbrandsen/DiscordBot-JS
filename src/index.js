@@ -109,7 +109,18 @@ for (const file of commands) {
 	log.console(log.format(`> Loaded &7${config.prefix}${command.name}&f command`));
 }		
 
-log.info(`Loaded ${events.length} events and ${commands.length} commands`);
+fs.readdirSync('src/commands').forEach(item => {
+	if (!item.includes('.')) {
+		const commands = fs.readdirSync(`src/commands/${item}`).filter(file => file.endsWith('.js'));		
+		for (const file of commands) {
+			const command = require(`./commands/${item}/${file}`);
+			client.commands.set(command.name, command);
+			log.console(log.format(`> Loaded &7${config.prefix}${command.name}&f command`));
+		}	
+	}
+});
+
+log.info(`Loaded ${events.length} events and ${Array.from(client.commands.values()).length} commands`);
 
 const one_day = 1000 * 60 * 60 * 24;
 const txt = 'user/transcripts/text';

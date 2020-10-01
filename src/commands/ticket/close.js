@@ -6,7 +6,7 @@ const {
 	MessageEmbed
 } = require('discord.js');
 const fs = require('fs');
-const archive = require('../modules/archive');
+const archive = require('../../modules/archive');
 
 module.exports = {
 	name: 'sluit',

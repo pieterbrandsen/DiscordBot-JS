@@ -4,10 +4,10 @@ const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
 
 module.exports = {
-	name: 'tickets',
+	name: 'mijnTickets',
 	description: 'Krijg een lijst van je recente tickets om de copieën te downloaden.',
 	usage: '[@lid]',
-	aliases: ['lijst', 'list'],
+	aliases: ['myTickets', 'lijst', 'list'],
 	example: '',
 	args: false,
 	async execute(client, message, args, {config, Ticket}) {
