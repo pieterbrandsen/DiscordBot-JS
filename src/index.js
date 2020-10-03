@@ -38,7 +38,7 @@ const log = new Logger({
 
 log.multi(log); // required to allow other files to access the logger
 
-require('./modules/updater')(); // check for updates
+// require('./modules/updater').execute(client, config); // check for updates
 
 
 /**

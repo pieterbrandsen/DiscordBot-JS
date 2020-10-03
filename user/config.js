@@ -10,6 +10,8 @@ module.exports = {
 	guild: '725062629541937224', // ID of your guild
 	staff_role: '725241568302333973', // ID of your Support Team role
 
+	ip: "34.91.125.109:30120",
+
 	announcementsChannelId: "760136360732131339",
 	generalChannelId: "760052816197844993",
 	ticketCreateChannelId: "751778285507313666",
@@ -30,6 +32,16 @@ Als er nog wat is, maak even een ticket aan in {{ ticketChannel }} en dan zijn w
 		message: `Jammer om te zien dat je de server verlaten hebt.
 \nAls je nog terug wilt komen kan dit, hier is een invite zodat je terug kan komen.
 \n\nInvite: {{ invite }}`
+	},
+
+
+	serverStats: {
+		enabled: true,
+		category: '761624816179609611', // ID of your tickets category
+		ip: "IP:",
+		memberCount: "Leden:",
+		roleCount: "Rollen:",
+		channelCount: "Kanalen:",
 	},
 	
 
@@ -77,5 +89,4 @@ Als er nog wat is, maak even een ticket aan in {{ ticketChannel }} en dan zijn w
 	},
 	
 	debug: false,
-	updater: false
 };

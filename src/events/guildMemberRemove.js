@@ -1,6 +1,8 @@
 module.exports = {
     event: 'guildMemberRemove',
     async execute(client, [member], {config}) {
+        require('../modules/updater.js').execute(client, config);
+        
         // const guild = client.guilds.cache.get(config.guild);
 
         // let channel;

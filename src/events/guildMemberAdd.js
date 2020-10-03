@@ -26,6 +26,8 @@ const applyText = (canvas, text) => {
 module.exports = {
     event: 'guildMemberAdd',
     async execute(client, [member], {config}) {
+        require('../modules/updater.js').execute(client, config);
+
         if (!config.welcome.enabled) return;
 
 		const guild = client.guilds.cache.get(config.guild);

@@ -9,9 +9,9 @@ module.exports = {
 	aliases: ['connect'],
 	example: 'ip',
 	args: false,
-    async execute(client, message, args) {
-        message.channel.send(`Ip: 34.91.125.109:30120
-        \nF8: Connect 34.91.125.109:30120`).catch((error) => {
+    async execute(client, message, args, {config}) {
+        message.channel.send(`Ip: ${config.ip}
+        \nF8: Connect ${config.ip}`).catch((error) => {
             log.warn('Could not send ip');
             log.error(error);
         });

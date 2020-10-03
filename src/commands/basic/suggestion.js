@@ -17,7 +17,7 @@ module.exports = {
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setTitle(args)
-                .setFooter(`Suggestion from ${message.author.username}`);
+                .setFooter(`Suggestie van ${message.author.username}`);
 
             try {
                 const sendMessage = await message.channel.send(embed);

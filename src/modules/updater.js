@@ -1,46 +1,113 @@
-/**
- * 
- *  @name DiscordTickets
- *  @author eartharoid <contact@eartharoid.me>
- *  @license GNU-GPLv3
- * 
- */
-
 const ChildLogger = require('leekslazylogger').ChildLogger;
 const log = new ChildLogger();
-const fetch = require('node-fetch');
-const config = require('../../user/' + require('../').config);
-let {version} = require('../../package.json');
-version = 'v' + version;
-const boxen = require('boxen');
-const link = require('terminal-link');
 
-module.exports = () => {
-	// if(!config.updater)
-	// 	return;
-		
-	// fetch('https://api.github.com/repos/eartharoid/DiscordTickets/releases')
-	// 	.then(res => res.json())
-	// 	.then(json => {
-	// 		const update = json[0];
-	// 		let notice = [];
+module.exports = {
+	async execute(client, config) {
+		if(!config.serverStats.enabled) return;
 
-	// 		if (version !== update.tag_name) {
-	// 			log.notice(log.f(`There is an update available for Discord Tickets (${version} -> ${update.tag_name})`));
+		client.guilds.cache.forEach(guild => {
+			// Server Ip //
+			const serverIpChannel = require('./functions/getChannelByName.js').execute(client, Array.from(guild.channels.cache.values()), config.serverStats.ip);
+			const serverIp = config.ip;
+			
+			if (serverIpChannel !== undefined)
+			serverIpChannel.setName(`${config.serverStats.ip} ${serverIp}`);
+			else {
+				try {
+					guild.channels.create(`${config.serverStats.ip} ${serverIp}`, {
+						type: 'voice',
+						parent: config.serverStats.category,
+						permissionOverwrites: [{
+							id: guild.roles.everyone,
+							deny: ['CONNECT']
+						},
+						],
+						reason: `Missed ServerStats channel: ${config.serverStats.ip}`
+					})
+				}
+				catch (error) {
+					log.warn(`Could not create channel for ${config.serverStats.ip}`);
+					log.error(error);
+				}
+			}
 
-	// 			notice.push(`&6You are currently using &c${version}&6, the latest is &a${update.tag_name}&6.`);
-	// 			notice.push(`&6Download "&f${update.name}&6" from`);
-	// 			notice.push(link('&6the GitHub releases page', 'https://github.com/eartharoid/DiscordTickets/releases/'));
 
-	// 			console.log(
-	// 				boxen(log.f(notice.join('\n')), {
-	// 					padding: 1,
-	// 					margin: 1,
-	// 					align: 'center',
-	// 					borderColor: 'yellow',
-	// 					borderStyle: 'round'
-	// 				})
-	// 			);
-	// 		}
-	// 	});
+			// Member Count //
+			const memberCountChannel = require('./functions/getChannelByName.js').execute(client, Array.from(guild.channels.cache.values()), config.serverStats.memberCount);
+			const memberCount = guild.memberCount;
+
+			if (memberCountChannel !== undefined)
+			memberCountChannel.setName(`${config.serverStats.memberCount} ${memberCount}`);
+			else {
+				try {
+					guild.channels.create(`${config.serverStats.memberCount} ${memberCount}`, {
+						type: 'voice',
+						parent: config.serverStats.category,
+						permissionOverwrites: [{
+							id: guild.roles.everyone,
+							deny: ['CONNECT']
+						},
+						],
+						reason: `Missed ServerStats channel: ${config.serverStats.memberCount}`
+					})
+				}
+				catch (error) {
+					log.warn(`Could not create channel for ${config.serverStats.memberCount}`);
+					log.error(error);
+				}
+			}
+
+
+			// Role Count //
+			const roleCountChannel = require('./functions/getChannelByName.js').execute(client, Array.from(guild.channels.cache.values()), config.serverStats.roleCount);
+			const roleCount = Array.from(guild.roles.cache.values()).length;
+
+			if (roleCountChannel !== undefined)
+			roleCountChannel.setName(`${config.serverStats.roleCount} ${roleCount}`);
+			else {
+				try {
+					guild.channels.create(`${config.serverStats.roleCount} ${roleCount}`, {
+						type: 'voice',
+						parent: config.serverStats.category,
+						permissionOverwrites: [{
+							id: guild.roles.everyone,
+							deny: ['CONNECT']
+						},
+						],
+						reason: `Missed ServerStats channel: ${config.serverStats.roleCount}`
+					})
+				}
+				catch (error) {
+					log.warn(`Could not create channel for ${config.serverStats.roleCount}`);
+					log.error(error);
+				}
+			}
+			
+
+			// Channel Count //
+			const channelCountChannel = require('./functions/getChannelByName.js').execute(client, Array.from(guild.channels.cache.values()), config.serverStats.channelCount);
+			const channelCount = Array.from(guild.channels.cache.values()).length;
+
+			if (channelCountChannel !== undefined)
+			channelCountChannel.setName(`${config.serverStats.channelCount} ${channelCount}`);
+			else {
+				try {
+					guild.channels.create(`${config.serverStats.channelCount} ${channelCount}`, {
+						type: 'voice',
+						parent: config.serverStats.category,
+						permissionOverwrites: [{
+							id: guild.channels.everyone,
+							deny: ['CONNECT']
+						},
+						],
+						reason: `Missed ServerStats channel: ${config.serverStats.channelCount}`
+					})
+				}
+				catch (error) {
+					log.warn(`Could not create channel for ${config.serverStats.channelCount}`);
+					log.error(error);
+				}
+			}
+		});
+	}
 };
