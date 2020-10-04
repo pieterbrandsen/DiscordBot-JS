@@ -1,6 +1,10 @@
+const ChildLogger = require('leekslazylogger').ChildLogger;
+const log = new ChildLogger();
+
 module.exports = {
     event: 'guildMemberRemove',
     async execute(client, [member], {config}) {
+        log.info(`A User "${member.user.username}" has left "${member.guild.name}"` );
         require('../modules/updater.js').execute(client, config);
         
         // const guild = client.guilds.cache.get(config.guild);

@@ -96,7 +96,7 @@ module.exports = {
 						type: 'voice',
 						parent: config.serverStats.category,
 						permissionOverwrites: [{
-							id: guild.channels.everyone,
+							id: guild.roles.everyone,
 							deny: ['CONNECT']
 						},
 						],

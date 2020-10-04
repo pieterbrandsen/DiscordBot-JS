@@ -21,10 +21,11 @@ module.exports = {
 	welcome: {
 		enabled: true,
 		channelId: "751770026733862913",
-		DMMessage: `Hallotjes {{ tag }}.
-Welkom op **{{ guild }}**, check gerust eens {{ announcements }} en kom gezellig mee praten in {{ general }}.
-Als er nog wat is, maak even een ticket aan in {{ ticketChannel }} en dan zijn we zo snel mogelijk bij je. 😊
-\nMet vriendelijke groeten, het staff team van **{{ guild }}**`,
+		DMMessageTitle: `Hallotjes {{ userName }}.`,
+		DMMessageDescription: `Welkom op **{{ guild }}**, hieronder kan je de meest belangrijke kanalen zien:`,
+		DMMessageFields: [`panda's zijn cool`, 'apen zijn cool', 'konijnen zijn cool'],
+		DMMessageFieldLinks: ['{{ announcements }}', '{{ general }}', '{{ ticketChannel }}'],
+		DMMessageFooter: `Met vriendelijke groeten, het staff team van {{ guild }}`,
 		message: ["Hoi {{ tag }}, panda's zijn cool.", "Hoi {{ tag }}, apen zijn cool.", "Hoi {{ tag }}, konijnen zijn cool."]
 	},
 	leave: {

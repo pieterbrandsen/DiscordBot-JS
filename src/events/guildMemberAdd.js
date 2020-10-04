@@ -1,5 +1,4 @@
 const { MessageAttachment, MessageEmbed } = require('discord.js');
-const Discord = require('discord.js');
 const ChildLogger = require('leekslazylogger').ChildLogger;
 const log = new ChildLogger();
 
@@ -26,22 +25,36 @@ const applyText = (canvas, text) => {
 module.exports = {
     event: 'guildMemberAdd',
     async execute(client, [member], {config}) {
+        log.info(`New User "${member.user.username}" has joined "${member.guild.name}"` );
         require('../modules/updater.js').execute(client, config);
 
         if (!config.welcome.enabled) return;
 
 		const guild = client.guilds.cache.get(config.guild);
-        log.info(`New User "${member.user.username}" has joined "${member.guild.name}"` );
+
 
         if (member.user.bot) return;
 
-        let DMMessage = config.welcome.DMMessage
-        .replace('{{ tag }}', member)
-        .replace('{{ guild }}', guild)
-        .replace('{{ announcements }}', client.channels.cache.get(config.announcementsChannelId))
-        .replace('{{ general }}', client.channels.cache.get(config.generalChannelId))
-        .replace('{{ ticketChannel }}', client.channels.cache.get(config.ticketCreateChannelId))
-        .replace('{{ guild }}', guild);
+        const DMMessageTitle = config.welcome.DMMessageTitle.replace('{{ userName }}', member.user.username);
+        const DMMessageDescription = config.welcome.DMMessageDescription.replace('{{ guild }}', guild);
+        const DMMessageFooter = config.welcome.DMMessageFooter.replace('{{ guild }}', guild);
+
+
+        let DMMessageEmbed = new MessageEmbed();
+        DMMessageEmbed.setColor(config.colour)
+        DMMessageEmbed.setTitle(DMMessageTitle);
+        DMMessageEmbed.setDescription(DMMessageDescription);
+        DMMessageEmbed.setFooter(DMMessageFooter);
+
+        for (let i = 0; i < config.welcome.DMMessageFields.length; i++) {
+            const description = config.welcome.DMMessageFields[i]
+            const link = config.welcome.DMMessageFieldLinks[i]
+            .replace('{{ announcements }}', client.channels.cache.get(config.announcementsChannelId))
+            .replace('{{ general }}', client.channels.cache.get(config.generalChannelId))
+            .replace('{{ ticketChannel }}', client.channels.cache.get(config.ticketCreateChannelId));
+
+            DMMessageEmbed.addField(description, link, true);
+        }
         let textMessageNumber = Math.floor(Math.random() * Math.floor(config.welcome.message.length));
         let textMessage = config.welcome.message[textMessageNumber]
         .replace('{{ tag }}', member);
@@ -85,7 +98,7 @@ module.exports = {
     
         const attachment = new MessageAttachment(canvas.toBuffer(), 'welcome-image.png');
 
-        let m = await channel.send(DMMessage);
+        let m = await channel.send(DMMessageEmbed);
         m.delete({timeout: 60000});
 
         member.guild.channels.cache.get(config.welcome.channelId).send(

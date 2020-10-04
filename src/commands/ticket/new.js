@@ -139,7 +139,7 @@ module.exports = {
 				ping = `@${config.tickets.ping},\n`;
 			}
 
-			await c.send(`${message.author.username} heeft een nieuw ticket gemaakt`);
+			await c.send(`${ping} ${message.author.username} heeft een nieuw ticket gemaakt`);
 
 			if (config.tickets.send_img) {
 				const images = fs.readdirSync('user/images');
