@@ -9,6 +9,7 @@ const USER_AGENT = `${config.name} ${require('../../package.json').version} , No
 
 module.exports = {
     async execute(client) {
+        if (!config.serverStatus.enabled) break;
         const guild = client.guilds.cache.get(config.guild);
 
 
@@ -24,13 +25,8 @@ module.exports = {
             'headers': { 'User-Agent': USER_AGENT }
         };
 
-        const CHANNEL_ID = config.serverStatsChannelId;
-        const MESSAGE_ID = "763424550490341418";
-
-        const SUGGESTION_CHANNEL = CHANNEL_ID;
-        const BUG_CHANNEL = CHANNEL_ID;
-        const BUG_LOG_CHANNEL = CHANNEL_ID;
-        const LOG_CHANNEL = CHANNEL_ID;
+        const CHANNEL_ID = config.serverStatusChannelId;
+        const MESSAGE_ID = config.serverStatusMessageId;
 
         var TICK_N = 0;
         var MESSAGE;

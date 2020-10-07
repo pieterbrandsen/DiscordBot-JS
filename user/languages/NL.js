@@ -12,7 +12,6 @@ module.exports = {
 
     errors: {
         noStaffRole: {
-
         }
     },
 
@@ -99,10 +98,6 @@ module.exports = {
     apply: {
         wrongArgs: "Kies uit een van de volgende solicitaties:",
         applyWelcomeMessage: "Welkom bij je solicitatie",
-        questions: {
-            politie: ["1", "2", "3"], 
-            ambulance: ["1", "2", "3"],
-        },
         timedOutTitle: "Applicatie Verlopen",
         timedOutDescription: "Je applicatie is verlopen, je hebt 10 minuten per vraag.",
 
@@ -113,8 +108,6 @@ module.exports = {
     },
 
     tickets: {
-        category: '760864285886513184', // ID of your tickets category
-		send_img: true,
 		ping: 'here',
 		text: `Hallotjes, {{ tag }}!
 		Een van ons staff team zal zo snel mogelijk bij u zijn.
@@ -129,7 +122,6 @@ module.exports = {
     },
 
     serverStats: {
-		category: '761869196581273631', // ID of your tickets category
 		ip: "IP:",
 		memberCount: "Leden:",
 		userCount: "Gebruikers:",
