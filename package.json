@@ -12,7 +12,7 @@
 		"dotenv": "^8.2.0",
 		"leekslazylogger": "^2.0.0",
 		"line-reader": "^0.4.0",
-		"node-fetch": "^2.6.0",
+		"node-fetch": "^2.6.1",
 		"sequelize": "^6.3.4",
 		"terminal-link": "^2.1.1",
 		"fetch-timeout": "0.0.2",
