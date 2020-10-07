@@ -1,27 +1,27 @@
 module.exports = {
 	language: 'NL',
 
-	prefix: '-',
+	prefix: '!',
 	name: 'GroesbeekRP',
 	activities: ['Groesbeek Roleplay'],
 	activity_types: ['WATCHING'],
 	colour: '#009999',
 	err_colour: '#E74C3C',
-	cooldown: 3,
+	cooldown: 5,
 
 	UPDATE_TIME: 60000, // in ms
 
 
 	guild: '725062629541937224', // ID of your guild
-	staff_role: '758642877089185803', // ID of your Support Team role
+	staff_role: '725241568302333973', // ID of your Support Team role
 
 	ip: "144.91.125.129:3479",
 
-	announcementsChannelId: "758642911968886784",
-	generalChannelId: "759080921776521287",
-	ticketCreateChannelId: "758755607787864124",
+	announcementsChannelId: "760136360732131339",
+	generalChannelId: "760052816197844993",
+	ticketCreateChannelId: "751778285507313666",
 	suggestionChannelId: ["751770087366721597"],
-	serverStatsChannelId: "758642914145730570",
+	serverStatsChannelId: "763419104680869898",
 	
 
 	music: {
@@ -31,46 +31,25 @@ module.exports = {
 		PRUNING: true
 	},
 
-
 	welcome: {
-		enabled: true,
-		channelId: "751770026733862913",
-		DMMessageTitle: `Hallotjes {{ userName }}.`,
-		DMMessageDescription: `Welkom op **{{ guild }}**, hieronder kan je de meest belangrijke kanalen zien:`,
-		DMMessageFields: [`panda's zijn cool`, 'apen zijn cool', 'konijnen zijn cool'],
-		DMMessageFieldLinks: ['{{ announcements }}', '{{ general }}', '{{ ticketChannel }}'],
-		DMMessageFooter: `Met vriendelijke groeten, het staff team van {{ guild }}`,
-		message: ["Hoi {{ tag }}, panda's zijn cool.", "Hoi {{ tag }}, apen zijn cool.", "Hoi {{ tag }}, konijnen zijn cool."]
-	},
-	leave: {
-		enabled: true,
-		message: `Jammer om te zien dat je de server verlaten hebt.
-\nAls je nog terug wilt komen kan dit, hier is een invite zodat je terug kan komen.
-\n\nInvite: {{ invite }}`
+		enabled: true
 	},
 
+	leave: {
+		enabled: false
+	},
+
+	apply: {
+		enabled: true
+	},
 
 	serverStats: {
 		enabled: true,
-		category: '761869196581273631', // ID of your tickets category
-		ip: "IP:",
-		memberCount: "Leden:",
-		userCount: "Gebruikers:",
-		botCount: "Bots:",
-		roleCount: "Rollen:",
-		channelCount: "Kanalen:",
 	},
 	
 
 	tickets: {
-		category: '760864285886513184', // ID of your tickets category
-		send_img: true,
-		ping: 'here',
-		text: `Hallotjes, {{ tag }}!
-		Een van ons staff team zal zo snel mogelijk bij u zijn.
-		Kunt u ondertussen uw onderwerp zo goed mogelijk uitleggen? 😊`,
-		pin: false,
-		max: 3
+		enabled: true
 	},
 
 	transcripts: {
@@ -82,12 +61,6 @@ module.exports = {
 			enabled: false,
 			server: 'https://tickets.example.com',
 		}
-	},
-
-	panel: {
-		title: 'Support Tickets',
-		description: 'Hulp nodig? Geen probleem! Reageer op dit paneel om een nieuw support ticket aan te maken zodat ons staff team u kunt helpen.',
-		reaction: '🧾'
 	},
 
 	storage: {

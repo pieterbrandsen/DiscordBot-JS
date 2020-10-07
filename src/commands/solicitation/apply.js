@@ -3,7 +3,6 @@ const log = new ChildLogger();
 
 const discord = require('discord.js');
 const fs = require('fs');
-const { Solicitation } = require('opusscript');
 const archive = require('../../modules/archive');
 
 const config = require(`../../../user/languages/${require('../../../user/config').language}`);
