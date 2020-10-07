@@ -34,7 +34,23 @@ module.exports = {
 
 			// Member Count //
 			const memberCountChannel = require('./functions/getChannelByName.js').execute(client, Array.from(guild.channels.cache.values()), config.serverStats.memberCount);
-			const memberCount = guild.memberCount;
+			let memberCount = 0;
+			let userCount = 0;
+			let botCount = 0;
+
+			guild.members.cache.forEach(member => {
+				memberCount++;
+				switch (member.user.bot) {
+					case false:
+						userCount++;
+						break;
+					case true:
+						botCount++;
+					default:
+						break;
+				}
+			});
+
 
 			if (memberCountChannel !== undefined)
 			memberCountChannel.setName(`${config.serverStats.memberCount} ${memberCount}`);
@@ -53,6 +69,56 @@ module.exports = {
 				}
 				catch (error) {
 					log.warn(`Could not create channel for ${config.serverStats.memberCount}`);
+					log.error(error);
+				}
+			}
+
+
+			// Member (No Bot) Count //
+			const userCountChannel = require('./functions/getChannelByName.js').execute(client, Array.from(guild.channels.cache.values()), config.serverStats.userCount);
+
+			if (userCountChannel !== undefined)
+			userCountChannel.setName(`${config.serverStats.userCount} ${userCount}`);
+			else {
+				try {
+					guild.channels.create(`${config.serverStats.userCount} ${userCount}`, {
+						type: 'voice',
+						parent: config.serverStats.category,
+						permissionOverwrites: [{
+							id: guild.roles.everyone,
+							deny: ['CONNECT']
+						},
+						],
+						reason: `Missed ServerStats channel: ${config.serverStats.userCount}`
+					})
+				}
+				catch (error) {
+					log.warn(`Could not create channel for ${config.serverStats.userCount}`);
+					log.error(error);
+				}
+			}
+
+
+			// Member (Bot) Count //
+			const botCountChannel = require('./functions/getChannelByName.js').execute(client, Array.from(guild.channels.cache.values()), config.serverStats.botCount);
+
+			if (botCountChannel !== undefined)
+			botCountChannel.setName(`${config.serverStats.botCount} ${botCount}`);
+			else {
+				try {
+					guild.channels.create(`${config.serverStats.botCount} ${botCount}`, {
+						type: 'voice',
+						parent: config.serverStats.category,
+						permissionOverwrites: [{
+							id: guild.roles.everyone,
+							deny: ['CONNECT']
+						},
+						],
+						reason: `Missed ServerStats channel: ${config.serverStats.botCount}`
+					})
+				}
+				catch (error) {
+					log.warn(`Could not create channel for ${config.serverStats.botCount}`);
 					log.error(error);
 				}
 			}

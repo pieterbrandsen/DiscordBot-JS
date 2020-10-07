@@ -8,7 +8,7 @@ module.exports = {
 	name: 'help',
 	description: 'Toon help menu',
 	usage: '[commando]',
-	aliases: ['hulp', 'command', 'commands'],
+	aliases: ['h', 'hulp', 'command', 'commands'],
 	example: 'help new',
 	args: false,
 	execute(client, message, args, { config }) {
@@ -58,6 +58,14 @@ module.exports = {
 			}
 			
 			let cmds = [];
+			const allCommandsEmbed = new MessageEmbed()
+			.setTitle(`Command's`)
+			.setColor(config.colour)
+			.setDescription(
+				`\nDe commandos waar je toegang tot hebt zijn hieronder te zien. typ \`${config.prefix}help [command]\` voor meer informatie over een gekozen commando.
+				\n\nContact staff als je meer hulp of vragen hebt.`
+			)
+			.setFooter(guild.name, guild.iconURL())
 
 			for (let command of Array.from(client.commands.values())) {
 				if (commands.indexOf(command.name) == -1 || command.name == "help") continue;
@@ -68,20 +76,12 @@ module.exports = {
 
 				if (desc.length > 50)
 					desc = desc.substring(0, 50) + '...';
-				cmds.push(`**${config.prefix}${command.name}** **·** ${desc}`);
+
+				allCommandsEmbed.addField(`**${config.prefix}${command.name}**`, `${desc}`, true)
+				cmds.push();
 			}
 		
-			message.channel.send(
-				new MessageEmbed()
-				.setTitle(`Command's`)
-				.setColor(config.colour)
-				.setDescription(
-					`\nDe commandos waar je toegang tot hebt zijn hieronder te zien. typ \`${config.prefix}help [command]\` voor meer informatie over een gekozen commando.
-					\n${cmds.join('\n\n')}
-					\nContact staff als je meer hulp of vragen hebt.`
-				)
-				.setFooter(guild.name, guild.iconURL())
-			).catch((error) => {
+			message.channel.send(allCommandsEmbed).catch((error) => {
 				log.warn('Could not send help menu');
 				log.error(error);
 			});

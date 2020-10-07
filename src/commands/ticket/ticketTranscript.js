@@ -1,15 +1,13 @@
-
-
 const fs = require('fs');
 const {
 	MessageEmbed
 } = require('discord.js');
 
 module.exports = {
-	name: 'copie',
+	name: 'ticketCopie',
 	description: 'Krijg een copie van je ticket',
 	usage: '<ticket-id>',
-	aliases: ['transcript', 'archief', 'archive', 'download'],
+	aliases: ['ticketTranscript', 'ticketArchief', 'ticketArchive', 'ticketDownload'],
 	example: 'copie 57',
 	args: true,
 	async execute(client, message, args, {config, Ticket}) {
@@ -51,11 +49,11 @@ module.exports = {
 			.setTitle(`Ticket ${id}`)
 			.setFooter(guild.name, guild.iconURL());
 
-		if (fs.existsSync(`user/transcripts/text/${ticket.channel}.txt`)) {
+		if (fs.existsSync(`user/transcripts/ticket/text/${ticket.channel}.txt`)) {
 			embed.addField('Tekst Copie', 'Zie bijlage');
 			res.files = [
 				{
-					attachment: `user/transcripts/text/${ticket.channel}.txt`,
+					attachment: `user/transcripts/ticket/text/${ticket.channel}.txt`,
 					name: `ticket-${id}-${ticket.channel}.txt`
 				}
 			];

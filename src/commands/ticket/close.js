@@ -74,7 +74,7 @@ module.exports = {
 		}
 
 		let success;
-		let pre = fs.existsSync(`user/transcripts/text/${channel.id}.txt`) ||
+		let pre = fs.existsSync(`user/transcripts/ticket/text/${channel.id}.txt`) ||
 			fs.existsSync(`user/transcripts/raw/${channel.id}.log`) ?
 			`Je kan later een gearchiveerde versie zien met \`${config.prefix}transcript ${ticket.id}\`` :
 			'';
@@ -135,10 +135,10 @@ module.exports = {
 						.setTitle(`Ticket ${ticket.id}`)
 						.setFooter(guild.name, guild.iconURL());
 
-					if (fs.existsSync(`user/transcripts/text/${ticket.get('channel')}.txt`)) {
+					if (fs.existsSync(`user/transcripts/ticket/text/${ticket.get('channel')}.txt`)) {
 						embed.addField('Text transcript', 'Zie bijlage');
 						res.files = [{
-							attachment: `user/transcripts/text/${ticket.get('channel')}.txt`,
+							attachment: `user/transcripts/ticket/text/${ticket.get('channel')}.txt`,
 							name: `ticket-${ticket.id}-${ticket.get('channel')}.txt`
 						}];
 					}

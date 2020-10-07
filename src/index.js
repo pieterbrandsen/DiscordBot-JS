@@ -1,10 +1,3 @@
-/**
- * 
- *  @name DiscordTickets
- *  @author eartharoid <contact@eartharoid.me>
- *  @license GNU-GPLv3
- * 
- */
 const fs = require('fs');
 const path = require('path');
 
@@ -23,6 +16,10 @@ const client = new Discord.Client({
 client.events = new Discord.Collection();
 client.commands = new Discord.Collection();
 client.cooldowns = new Discord.Collection();
+client.prefix = config.prefix;
+client.queue = new Map();
+
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const utils = require('./modules/utils');
 const leeks = require('leeks.js');
 
@@ -75,6 +72,16 @@ Ticket.init({
 	modelName: 'ticket'
 });
 
+class Solicitation extends Model {}
+Solicitation.init({
+	job: DataTypes.STRING,
+	creator: DataTypes.STRING,
+	open: DataTypes.BOOLEAN
+}, {
+	sequelize,
+	modelName: 'solicitation'
+});
+
 class Setting extends Model {}
 Setting.init({
 	key: DataTypes.STRING,
@@ -85,6 +92,7 @@ Setting.init({
 });
 
 Ticket.sync();
+Solicitation.sync();
 Setting.sync();
 
 /**
@@ -95,7 +103,7 @@ for (const file of events) {
 	const event = require(`./events/${file}`);
 	client.events.set(event.event, event);
 	// client.on(event.event, e => client.events.get(event.event).execute(client, e, Ticket, Setting));
-	client.on(event.event, (e1, e2) => client.events.get(event.event).execute(client, [e1, e2], {config, Ticket, Setting}));
+	client.on(event.event, (e1, e2) => client.events.get(event.event).execute(client, [e1, e2], {config, Ticket, Solicitation, Setting}));
 	log.console(log.format(`> Loaded &7${event.event}&f event`));
 }
 
@@ -123,14 +131,29 @@ fs.readdirSync('src/commands').forEach(item => {
 log.info(`Loaded ${events.length} events and ${Array.from(client.commands.values()).length} commands`);
 
 const one_day = 1000 * 60 * 60 * 24;
-const txt = 'user/transcripts/text';
-const clean = () => {
-	const files = fs.readdirSync(txt).filter(file => file.endsWith('.txt'));
+const ticketsTxt = 'user/transcripts/ticket/text';
+const ticketsClean = () => {
+	const files = fs.readdirSync(ticketsTxt).filter(file => file.endsWith('.txt'));
 	let total = 0;
 	for (const file of files) {
-		let diff = (new Date() - new Date(fs.statSync(`${txt}/${file}`).mtime));
+		let diff = (new Date() - new Date(fs.statSync(`${ticketsTxt}/${file}`).mtime));
 		if (Math.floor(diff / one_day) > config.transcripts.text.keep_for) {
-			fs.unlinkSync(`${txt}/${file}`);
+			fs.unlinkSync(`${ticketsTxt}/${file}`);
+			total++;
+		}
+	}
+	if (total > 0)
+		log.info(`Deleted ${total} old text ${utils.plural('transcript', total)}`);
+};
+
+const SolicitationTxt = 'user/transcripts/Solicitation/text';
+const SolicitationsClean = () => {
+	const files = fs.readdirSync(SolicitationTxt).filter(file => file.endsWith('.txt'));
+	let total = 0;
+	for (const file of files) {
+		let diff = (new Date() - new Date(fs.statSync(`${SolicitationTxt}/${file}`).mtime));
+		if (Math.floor(diff / one_day) > config.transcripts.text.keep_for) {
+			fs.unlinkSync(`${SolicitationTxt}/${file}`);
 			total++;
 		}
 	}
@@ -139,8 +162,10 @@ const clean = () => {
 };
 
 if (config.transcripts.text.enabled) {
-	clean();
-	setInterval(clean, one_day);
+	ticketsClean();
+	SolicitationsClean();
+	setInterval(ticketsClean, one_day);
+	setInterval(SolicitationsClean, one_day);
 }
 
 process.on('unhandledRejection', error => {

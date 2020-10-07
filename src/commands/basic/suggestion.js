@@ -16,8 +16,8 @@ module.exports = {
             const Discord = require('discord.js');
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
-                .setTitle(args)
-                .setFooter(`Suggestie van ${message.author.username}`);
+                .setTitle(`Suggestie van ${message.author.username}`)
+                .setDescription(args);
 
             try {
                 const sendMessage = await message.channel.send(embed);

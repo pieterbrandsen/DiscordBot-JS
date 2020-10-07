@@ -3,6 +3,10 @@ node_modules/
 user/dev.env
 user/dev.config.js
 user/storage.db
-user/transcripts/text/*.txt
-user/transcripts/raw/*.log
-user/transcripts/raw/entities/*.json
+user/transcripts/ticket/text/*.txt
+user/transcripts/ticket/raw/*.log
+user/transcripts/ticket/raw/entities/*.json
+
+user/transcripts/Solicitation/text/*.txt
+user/transcripts/Solicitation/raw/*.log
+user/transcripts/Solicitation/raw/entities/*.json

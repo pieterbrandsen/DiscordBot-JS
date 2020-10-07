@@ -1,18 +1,16 @@
 
-
 const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
 
 module.exports = {
-	name: 'tickets',
-	description: 'Krijg een lijst van je recente tickets om de copieën te downloaden.',
+	name: 'solicitaties',
+	description: 'Krijg een lijst van je recente solicitaties om de copieën te downloaden.',
 	usage: '[@lid]',
-	aliases: ['myTickets', 'lijst', 'list'],
+	aliases: ['solicitations', 'mijn-solicitaties', 'my-solicitations'],
 	example: '',
 	args: false,
-	async execute(client, message, args, {config, Ticket}) {
-
-		const guild = client.guilds.cache.get(config.guild);
+	async execute(client, message, args, {config, Solicitation}) {
+		const guild = message.guild;
 		
 		const supportRole = guild.roles.cache.get(config.staff_role);
 		if (!supportRole)
@@ -34,7 +32,7 @@ module.exports = {
 						.setColor(config.err_colour)
 						.setAuthor(message.author.username, message.author.displayAvatarURL())
 						.setTitle(':x: **Geen permissie**')
-						.setDescription('Je hebt geen permissie om andermans tickets te bekijken omdat je geen staff bent.')
+						.setDescription('Je hebt geen permissie om andermans solicitaties te bekijken omdat je geen staff bent.')
 						.addField('Gebruik', `\`${config.prefix}${this.name} ${this.usage}\`\n`)
 						.addField('Help', `Typ \`${config.prefix}help ${this.name}\` voor meer informatie`)
 						.setFooter(guild.name, guild.iconURL())
@@ -46,54 +44,53 @@ module.exports = {
 		}
 
 
-		let openTickets = await Ticket.findAndCountAll({
+		let openSolicitations = await Solicitation.findAndCountAll({
 			where: {
 				creator: user.id,
 				open: true
 			}
 		});
 
-		let closedTickets = await Ticket.findAndCountAll({
+		let closedSolicitations = await Solicitation.findAndCountAll({
 			where: {
 				creator: user.id,
 				open: false
 			}
 		});
 
-		closedTickets.rows = closedTickets.rows.slice(-10); // get most recent 10
+		closedSolicitations.rows = closedSolicitations.rows.slice(-10); // get most recent 10
 
 		let embed = new MessageEmbed()
 			.setColor(config.colour)
 			.setAuthor(user.username, user.displayAvatarURL())
-			.setTitle(`${context === 'self' ? 'Je' : user.username + '\'s'} tickets`)
+			.setTitle(`${context === 'self' ? 'Je' : user.username + '\'s'} solicitaties`)
 			.setFooter(guild.name + ' | Dit bericht wordt verwijderd in 60 seconden', guild.iconURL());
 
 		if(config.transcripts.web.enabled)
-			embed.setDescription(`Je kan al je ticket archieven bereiken op de [web portaal](${config.transcripts.web.server}/${user.id}).`);
+			embed.setDescription(`Je kan al je solicitaties archieven bereiken op de [web portaal](${config.transcripts.web.server}/${user.id}).`);
 		
 		let open = [],
 			closed = [];
 
 	
-		for (let t in openTickets.rows)  {
-			let desc = openTickets.rows[t].topic.substring(0, 30);
-			open.push(`> <#${openTickets.rows[t].channel}>: \`${desc}${desc.length > 20 ? '...' : ''}\``);
+		for (let t in openSolicitations.rows)  {
+			open.push(`> ${openSolicitations.rows[t].job}`);
 		
 		}
 		
-		for (let t in closedTickets.rows)  {
-			let desc = closedTickets.rows[t].topic.substring(0, 30);
+		for (let t in closedSolicitations.rows)  {
+			let job = closedSolicitations.rows[t].job.substring(0, 30);
 			let transcript = '';
-			let c = closedTickets.rows[t].channel;
-			if(fs.existsSync(`user/transcripts/ticket/text/${c}.txt`) || config.transcripts.web.enabled)
-				transcript = `\n> typ \`${config.prefix}transcript ${closedTickets.rows[t].id}\` om te bekijken.`;
+			let c = closedSolicitations.rows[t].channel;
+			if(fs.existsSync(`user/transcripts/Solicitation/text/${c}.txt`) || config.transcripts.web.enabled)
+				transcript = `\n> typ \`${config.prefix}transcript ${closedSolicitations.rows[t].id}\` om te bekijken.`;
 
-			closed.push(`> **#${closedTickets.rows[t].id}**: \`${desc}${desc.length > 20 ? '...' : ''}\`${transcript}`);
+			closed.push(`> **#${closedSolicitations.rows[t].id}**: \`${job}${job.length > 20 ? '...' : ''}\`${transcript}`);
 		
 		}
 		let pre = context === 'self' ? 'Je hebt' : user.username + ' heeft';
-		embed.addField('Open tickets', openTickets.count === 0 ? `${pre} geen open tickets.` : open.join('\n\n'), false);
-		embed.addField('Gesloten tickets', closedTickets.count === 0 ? `${pre} geen oude tickets` : closed.join('\n\n'), false);
+		embed.addField('Open solicitaties', openSolicitations.count === 0 ? `${pre} geen open solicitaties.` : open.join('\n\n'), false);
+		embed.addField('Gesloten solicitaties', closedSolicitations.count === 0 ? `${pre} geen oude solicitaties` : closed.join('\n\n'), false);
 			
 		message.delete({timeout: 15000});
 

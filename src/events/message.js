@@ -7,17 +7,17 @@ const archive = require('../modules/archive');
 
 module.exports = {
 	event: 'message',
-	async execute(client, [message], {config, Ticket, Setting}) {
-
+	async execute(client, [message], {config, Ticket, Solicitation, Setting}) {
 		const guild = client.guilds.cache.get(config.guild);
 
 		if (message.channel.type === 'dm' && !message.author.bot) {
 			log.console(`Received a DM from ${message.author.tag}: ${message.cleanContent}`);
-			return message.channel.send(`Hallotjes ${message.author.username}!
-Ik ben een support bot voor **${guild}**.
-typ \`${config.prefix}ticket\` op de server om een nieuw ticket te maken.
+			return;
+// 			return message.channel.send(`Hallotjes ${message.author.username}!
+// Ik ben een support bot voor **${guild}**.
+// typ \`${config.prefix}ticket\` op de server om een nieuw ticket te maken.
 
-Voer commando's uit in de server uit.`);
+// Voer commando's uit in de server uit.`);
 		} // stop here if is DM
 	
 		/**
@@ -27,11 +27,9 @@ Voer commando's uit in de server uit.`);
 		
 		let ticket = await Ticket.findOne({ where: { channel: message.channel.id } });
 		if(ticket) 
-			archive.add(message); // add message to archive
+		archive.add(message, "ticket"); // add message to archive
 
 		if (message.author.bot || message.author.id === client.user.id) return; // goodbye bots
-
-		
 		/**
 		 * Command handler
 		 * (no bots / self)
@@ -96,7 +94,7 @@ Voer commando's uit in de server uit.`);
 		setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
 
 		try {
-			command.execute(client, message, args, {config, Ticket, Setting});
+			command.execute(client, message, args, {config, Ticket, Solicitation, Setting});
 			log.console(`${message.author.tag} used the '${command.name}' command`);
 		} catch (error) {
 			log.warn(`An error occurred whilst executing the '${command.name}' command`);

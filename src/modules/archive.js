@@ -9,14 +9,24 @@ const dtf = require('@eartharoid/dtf');
 const config = require('../../user/' + require('../').config);
 const fetch = require('node-fetch');
 
-module.exports.add = (message) => {
+module.exports.add = (message, type, id) => {
 
 	if(message.type !== 'DEFAULT') return;
 
 	if (config.transcripts.text.enabled) { // text transcripts
-		let path = `user/transcripts/text/${message.channel.id}.txt`,
+		let path;
+		if (type == "ticket") {
+			path = `user/transcripts/ticket/text/${message.channel.id}.txt`,
 			time = dtf('HH:mm:ss n_D MMM YY', message.createdAt),
 			msg = message.cleanContent;
+		}
+		else if ("solicitation") {
+			path = `user/transcripts/solicitation/text/${id}${message.author.id}.txt`,
+			time = dtf('HH:mm:ss n_D MMM YY', message.createdAt),
+			msg = message.cleanContent;
+		}
+
+
 		message.attachments.each(a => msg += '\n' + a.url);
 		let string = `[${time}] [${message.author.tag}] :> ${msg}`;
 		fs.appendFileSync(path, string + '\n');
@@ -128,7 +138,7 @@ module.exports.export = (Ticket, channel) => new Promise((resolve, reject) => {
 			fetch(endpoint, {
 				method: 'post',
 				body:    JSON.stringify(data),
-				headers: { 'Content-Type': 'application/json' },
+				headers: { 'Content-Type': 'Solicitation/json' },
 			})
 				.then(res => res.json())
 				.then(res => {

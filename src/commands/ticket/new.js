@@ -1,5 +1,3 @@
-
-
 const ChildLogger = require('leekslazylogger').ChildLogger;
 const log = new ChildLogger();
 const { MessageEmbed } = require('discord.js');

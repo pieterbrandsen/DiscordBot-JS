@@ -1,4 +1,6 @@
 module.exports = {
+	language: 'NL',
+
 	prefix: '!',
 	name: 'RedeWijk Support',
 	activities: ['Redewijk Roleplay'],
@@ -17,6 +19,14 @@ module.exports = {
 	ticketCreateChannelId: "751778285507313666",
 	suggestionChannelId: ["751770087366721597"],
 	
+
+	music: {
+		YOUTUBE_API_KEY: "AIzaSyDln0n84Xeq_xQDCFYpf6jMlI1hkw-G9L8",
+		SOUNDCLOUD_CLIENT_ID: "",
+		MAX_PLAYLIST_SIZE: 50,
+		PRUNING: true
+	},
+
 
 	welcome: {
 		enabled: true,
@@ -41,6 +51,8 @@ module.exports = {
 		category: '761624816179609611', // ID of your tickets category
 		ip: "IP:",
 		memberCount: "Leden:",
+		userCount: "Gebruikers:",
+		botCount: "Bots:",
 		roleCount: "Rollen:",
 		channelCount: "Kanalen:",
 	},
@@ -84,7 +96,7 @@ module.exports = {
 			keep_for: 7
 		},
 		discord: {
-			enabled: false,
+			enabled: true,
 			channel: '751778285507313666' // ID of your log channel
 		}
 	},
