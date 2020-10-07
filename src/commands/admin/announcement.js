@@ -19,7 +19,7 @@ module.exports = {
         message.channel.send(new MessageEmbed()
             .setColor(config.err_colour)
             .setTitle(':warning: **Mededeling** :warning:')
-            .setDescription(`**${args[0]}**`)
+            .setDescription(`**${args.join(' ')}**`)
             .setFooter(guild.name, guild.iconURL())
         );
     },

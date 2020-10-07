@@ -12,7 +12,7 @@ module.exports = {
 	UPDATE_TIME: 60000, // in ms
 
 
-	guild: '758332017976016937', // ID of your guild
+	guild: '725062629541937224', // ID of your guild
 	staff_role: '758642877089185803', // ID of your Support Team role
 
 	ip: "144.91.125.129:3479",
@@ -20,7 +20,7 @@ module.exports = {
 	announcementsChannelId: "758642911968886784",
 	generalChannelId: "759080921776521287",
 	ticketCreateChannelId: "758755607787864124",
-	suggestionChannelId: ["760871983209644032", "760872211086704660", "760872065846476820", "760871983209644032"],
+	suggestionChannelId: ["751770087366721597"],
 	serverStatsChannelId: "758642914145730570",
 	
 

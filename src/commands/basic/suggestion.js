@@ -16,10 +16,9 @@ module.exports = {
             const Discord = require('discord.js');
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
-                .setAuthor(message.member.nickname ? message.member.nickname : message.author.tag,message.author.displayAvatarURL)
+                .setAuthor(message.member.nickname ? message.member.nickname : message.author.tag,message.author.displayAvatarURL())
                 .setTitle('Suggestie')
-                .setDescription(args);
-
+                .setDescription(args.join(' '));
             try {
                 const sendMessage = await message.channel.send(embed);
                 sendMessage.react('👍')
