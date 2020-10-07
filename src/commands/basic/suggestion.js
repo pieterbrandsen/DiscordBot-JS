@@ -7,7 +7,7 @@ module.exports = {
     description: 'Stuur een suggestie voor de server in het suggestie kanaal.',
     cooldown: 60,
     usage: '<tekst>',
-    aliases: ['suggestion'],
+    aliases: ['suggestion', 'sugg'],
     example: `Meer auto\'s voor iedereen!`,
     args: false,
     async execute(client, message, args, { config }) {
@@ -16,13 +16,14 @@ module.exports = {
             const Discord = require('discord.js');
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
-                .setTitle(`Suggestie van ${message.author.username}`)
+                .setAuthor(message.member.nickname ? message.member.nickname : message.author.tag,message.author.displayAvatarURL)
+                .setTitle('Suggestie')
                 .setDescription(args);
 
             try {
                 const sendMessage = await message.channel.send(embed);
-                sendMessage.react('✅')
-                    .then(() => sendMessage.react('❌'));
+                sendMessage.react('👍')
+                    .then(() => sendMessage.react('👎'));
                 message.delete({ timeout: 15000 });
 
             }

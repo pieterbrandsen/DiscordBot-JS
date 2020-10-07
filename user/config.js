@@ -1,23 +1,27 @@
 module.exports = {
 	language: 'NL',
 
-	prefix: '!',
-	name: 'RedeWijk Support',
-	activities: ['Redewijk Roleplay'],
+	prefix: '-',
+	name: 'GroesbeekRP',
+	activities: ['Groesbeek Roleplay'],
 	activity_types: ['WATCHING'],
 	colour: '#009999',
 	err_colour: '#E74C3C',
 	cooldown: 3,
 
-	guild: '725062629541937224', // ID of your guild
-	staff_role: '725241568302333973', // ID of your Support Team role
+	UPDATE_TIME: 60000, // in ms
 
-	ip: "34.91.125.109:30120",
 
-	announcementsChannelId: "760136360732131339",
-	generalChannelId: "760052816197844993",
-	ticketCreateChannelId: "751778285507313666",
-	suggestionChannelId: ["751770087366721597"],
+	guild: '758332017976016937', // ID of your guild
+	staff_role: '758642877089185803', // ID of your Support Team role
+
+	ip: "144.91.125.129:3479",
+
+	announcementsChannelId: "758642911968886784",
+	generalChannelId: "759080921776521287",
+	ticketCreateChannelId: "758755607787864124",
+	suggestionChannelId: ["760871983209644032", "760872211086704660", "760872065846476820", "760871983209644032"],
+	serverStatsChannelId: "758642914145730570",
 	
 
 	music: {
@@ -48,7 +52,7 @@ module.exports = {
 
 	serverStats: {
 		enabled: true,
-		category: '761624816179609611', // ID of your tickets category
+		category: '761869196581273631', // ID of your tickets category
 		ip: "IP:",
 		memberCount: "Leden:",
 		userCount: "Gebruikers:",
@@ -59,7 +63,7 @@ module.exports = {
 	
 
 	tickets: {
-		category: '760456192551682058', // ID of your tickets category
+		category: '760864285886513184', // ID of your tickets category
 		send_img: true,
 		ping: 'here',
 		text: `Hallotjes, {{ tag }}!

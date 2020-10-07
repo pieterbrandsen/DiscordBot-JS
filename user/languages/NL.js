@@ -1,5 +1,5 @@
 module.exports = {
-    prefix: '!',
+    prefix: '-',
 	name: 'RedeWijk Support',
 	activities: ['Redewijk Roleplay'],
 	activity_types: ['WATCHING'],

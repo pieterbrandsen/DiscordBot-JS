@@ -25,6 +25,11 @@ module.exports = {
 			updatePresence();
 		}, 15000);
 		
+		function updateServerStatus() {
+			const fiveMServerStatus = require('../modules/fiveMServerStats');
+			fiveMServerStatus.execute(client);
+		}
+		client.setInterval(updateServerStatus, config.UPDATE_TIME);
 		
 		if (client.guilds.cache.get(config.guild).member(client.user).hasPermission('ADMINISTRATOR', false)) 
 			log.success('\'ADMINISTRATOR\' permission has been granted');

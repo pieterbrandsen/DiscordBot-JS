@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const fetchTimeout = require('fetch-timeout');
 
 let dev = fs.existsSync('user/dev.env') && fs.existsSync('user/dev.config.js');
 
@@ -173,5 +174,6 @@ process.on('unhandledRejection', error => {
 	log.warn(`Uncaught ${error.name}: ${error.message}`);
 	log.error(error);
 });
+
 
 client.login(process.env.TOKEN);
