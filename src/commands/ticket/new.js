@@ -3,25 +3,33 @@ const log = new ChildLogger();
 const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
 
+const languageConfig = require(`../../../user/languages/${require('../../../user/config').language}`);
+const commandObject = languageConfig.commands.ticket.new;
+const commandText = commandObject.command;
+const text = commandObject.text;
+const returnText = commandObject.returnText;
+const logText = commandObject.logText;
+
 module.exports = {
-	name: 'ticket',
-	description: 'Maak een nieuw support ticket',
-	usage: '[onderwerp]',
-	aliases: ['new', 'nieuw', 'open'],
-	example: 'ticket ik kan niet joinen',
-	args: false,
+	name: commandText.name,
+	description: commandText.description,
+	usage: commandText.usage,
+	aliases: commandText.aliases,
+	example: commandText.example,
+	args: commandText.args,
+	permission: commandText.permission,
 	async execute(client, message, args, {config, Ticket}) {
 		
-		const guild = client.guilds.cache.get(config.guild);
+		const guild = client.guilds.cache.get(config.guildId);
 		
-		const supportRole = guild.roles.cache.get(config.staff_role);
+		const supportRole = guild.roles.cache.get(config.staffRoleId);
 		if (!supportRole)
 			return message.channel.send(
 				new MessageEmbed()
 					.setColor(config.err_colour)
-					.setTitle(':x: **Fout**')
-					.setDescription(`${config.name} is niet juist opgesteld. Kan geen support team vinden met het role id \`${config.staff_role}\``)
-					.setFooter(guild.name, guild.iconURL())
+					.setTitle(returnText.noStaffEmbedTitle)
+					.setDescription(returnText.noStaffEmbedDescription.replace("{{ serverName }}", config.serverName).replace("{{ staffRoleId }}", config.stafRoleId))
+					.setFooter(config.serverName, guild.iconURL())
 			);
 
 
@@ -45,9 +53,9 @@ module.exports = {
 				new MessageEmbed()
 					.setColor(config.err_colour)
 					.setAuthor(message.author.username, message.author.displayAvatarURL())
-					.setTitle(`:x: **Je hebt al ${tickets.count} of meer open tickets**`)
-					.setDescription(`Gebruik \`${config.prefix}close\` om onnodige tickets te sluiten.\n\n${ticketList.join(',\n')}`)
-					.setFooter(guild.name + ' | Dit bericht wordt verwijderd in 15 seconden', guild.iconURL())
+					.setTitle(returnText.maxTicketsEmbedTitle.replace("{{ ticketsCount }}", tickets.count))
+					.setDescription(`${returnText.maxTicketsEmbedDescription.replace("{{ prefix }}", config.prefix)}${ticketList.join(',\n')}`)
+					.setFooter(returnText.maxTicketsEmbedFooter.replace("{{ serverName }}", config.serverName), guild.iconURL())
 			);
 
 			return setTimeout(async () => {
@@ -63,12 +71,12 @@ module.exports = {
 				new MessageEmbed()
 					.setColor(config.err_colour)
 					.setAuthor(message.author.username, message.author.displayAvatarURL())
-					.setTitle(':x: **Descriptie is te lang**')
-					.setDescription('Limiteer je ticket onderwerp, maximaal 255 karakters. Een korte zin is genoeg.')
-					.setFooter(guild.name, guild.iconURL())
+					.setTitle(returnText.maxDescriptionLengthEmbedTitle)
+					.setDescription(returnText.maxDescriptionLengthEmbedDescription)
+					.setFooter(config.serverName, guild.iconURL())
 			);
 		else if (topic.length < 1)
-			topic = 'Geen onderwerp ingevoerd';
+			topic = text.noSubject;
 
 
 		let ticket = await Ticket.create({
@@ -98,7 +106,7 @@ module.exports = {
 				allow: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY']
 			}
 			],
-			reason: 'User requested a new support ticket channel'
+			reason: text.ticketCreated.replace("{{ ping }}", "").replace("{{ authorUsername }}", message.author.username)
 		}).then(async c => {
 
 			Ticket.update({
@@ -113,9 +121,9 @@ module.exports = {
 				new MessageEmbed()
 					.setColor(config.colour)
 					.setAuthor(message.author.username, message.author.displayAvatarURL())
-					.setTitle(':white_check_mark: **Ticket gemaakt**')
-					.setDescription(`Je ticket is gemaakt: ${c}`)
-					.setFooter(client.user.username + ' | Dit bericht wordt in 15 seconden verwijderd', client.user.avatarURL())
+					.setTitle(returnText.ticketCreatedEmbedTitle)
+					.setDescription(returnText.ticketCreatedEmbedDescription.replace("{{ c }}", c))
+					.setFooter(returnText.ticketCreatedEmbedFooter.replace("{{ botName }}", client.user.username), client.user.avatarURL())
 			);
 
 			setTimeout(async () => {
@@ -128,7 +136,7 @@ module.exports = {
 			let ping;
 			switch (config.tickets.ping) {
 			case 'staff':
-				ping = `<@&${config.staff_role}>,\n`;
+				ping = `<@&${config.staffRoleId}>,\n`;
 				break;
 			case false:
 				ping = '';
@@ -137,9 +145,9 @@ module.exports = {
 				ping = `@${config.tickets.ping},\n`;
 			}
 
-			await c.send(`${ping} ${message.author.username} heeft een nieuw ticket gemaakt`);
+			await c.send(text.ticketCreated.replace("{{ ping }}", ping).replace("{{ authorUsername }}", message.author.username));
 
-			if (config.tickets.send_img) {
+			if (config.tickets.sendImg) {
 				const images = fs.readdirSync('user/images');
 				await c.send({
 					files: [
@@ -149,18 +157,14 @@ module.exports = {
 				});
 			}
 
-			let text = config.tickets.text
-				.replace('{{ name }}', message.author.username)
-				.replace('{{ tag }}', message.author);
-
 
 			let w = await c.send(
 				new MessageEmbed()
 					.setColor(config.colour)
 					.setAuthor(message.author.username, message.author.displayAvatarURL())
-					.setDescription(text)
-					.addField('Onderwerp', `\`${topic}\``)
-					.setFooter(guild.name, guild.iconURL())
+					.setDescription(text.createdTicket[0].replace("{{ username }}", message.author.username))
+					.addField(text.createdTicket[1], text.createdTicket[2].replace("{{ topic }}", topic))
+					.setFooter(config.serverName, guild.iconURL())
 			);
 
 			if (config.tickets.pin)
@@ -172,15 +176,15 @@ module.exports = {
 					new MessageEmbed()
 						.setColor(config.colour)
 						.setAuthor(message.author.username, message.author.displayAvatarURL())
-						.setTitle('Nieuw ticket')
+						.setTitle(text.newTicket)
 						.setDescription(`\`${topic}\``)
-						.addField('Maker', message.author, true)
-						.addField('Kanaal', c, true)
-						.setFooter(guild.name, guild.iconURL())
+						.addField(text.creator, message.author, true)
+						.addField(text.channel, c, true)
+						.setFooter(config.serverName, guild.iconURL())
 						.setTimestamp()
 				);
 
-			log.info(`${message.author.tag} created a new ticket (#${name})`);
+			log.info(logText.userCreatedTicket.replace("{{ authorTag }}", message.author.tag).replace("{{ channelName }}", name));
 
 
 		}).catch(log.error);

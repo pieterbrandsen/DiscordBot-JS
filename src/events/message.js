@@ -5,13 +5,21 @@ const ChildLogger = require('leekslazylogger').ChildLogger;
 const log = new ChildLogger();
 const archive = require('../modules/archive');
 
+const languageConfig = require(`../../user/languages/${require('../../user/config').language}`);
+const eventObject = languageConfig.events.message;
+const text = eventObject.text;
+const returnText = eventObject.returnText;
+const logText = eventObject.logText;
+
 module.exports = {
 	event: 'message',
 	async execute(client, [message], {config, Ticket, Solicitation, Setting}) {
-		const guild = client.guilds.cache.get(config.guild);
+		const guild = client.guilds.cache.get(config.guildId);
+
+		// if (message.content.includes("<@")) return;
 
 		if (message.channel.type === 'dm' && !message.author.bot) {
-			log.console(`Received a DM from ${message.author.tag}: ${message.cleanContent}`);
+			log.console(logText.dmMessage.replace("{{ authorTag }}", message.author.tag).replace("{{ cleanMessage }}", message.cleanContent));
 			return;
 // 			return message.channel.send(`Hallotjes ${message.author.username}!
 // Ik ben een support bot voor **${guild}**.
@@ -46,17 +54,14 @@ module.exports = {
 		
 		if (!command || commandName === 'none') return; // not an existing command
 
-		if (message.guild.id !== guild.id)
-			return message.reply(`Deze bot kan alleen gebruikt worden in "${guild}"`); // not in this server
-
 		if (command.permission && !message.member.hasPermission(command.permission)) {
-			log.console(`${message.author.tag} tried to use the '${command.name}' command without permission`);
+			log.console(logText.userHasNoCommandPerms.replace("{{ authorTag }}", message.author.tag).replace("{{ commandName }}", command.name));
 			return message.channel.send(
 				new MessageEmbed()
 					.setColor(config.err_colour)
-					.setTitle(':x: Geen permissie')
-					.setDescription(`**Je hebt geen permissie om \`${command.name}\` te gebruiken** (bennodigd \`${command.permission}\`).`)
-					.setFooter(guild.name, guild.iconURL())
+					.setTitle(returnText.noPermsEmbedTitle)
+					.setDescription(returnText.noPermsEmbedDescription.replace("{{ commandName }}", command.name).replace("{{ commandPerms }}", command.permission))
+					.setFooter(config.serverName, guild.iconURL())
 			);
 		}
 
@@ -64,9 +69,9 @@ module.exports = {
 			return message.channel.send(
 				new MessageEmbed()
 					.setColor(config.err_colour)
-					.addField('Gebruik', `\`${config.prefix}${command.name} ${command.usage}\`\n`)
-					.addField('Help', `typ \`${config.prefix}help ${command.name}\` voor meer informatie`)
-					.setFooter(guild.name, guild.iconURL())
+					.addField(returnText.needsArgsEmbedFields[0], returnText.needsArgsEmbedFields[1].replace("{{ prefix }}", config.prefix).replace("{{ commandName }}", command.name).replace("{{ commandUsage }}", command.usage))
+					.addField(returnText.needsArgsEmbedFields[2], returnText.needsArgsEmbedFields[3].replace("{{ prefix }}", config.prefix).replace("{{ commandName }}", command.name))
+					.setFooter(config.serverName, guild.iconURL())
 			);
 
 		if (!client.cooldowns.has(command.name)) client.cooldowns.set(command.name, new Collection());
@@ -80,12 +85,12 @@ module.exports = {
 
 			if (now < expirationTime) {
 				const timeLeft = (expirationTime - now) / 1000;
-				log.console(`${message.author.tag} attempted to use the '${command.name}' command before the cooldown was over`);
+				log.console(logText.stillCooldown.replace("{{ authorTag }}", message.author.tag).replace("{{ commandName }}"));
 				return message.channel.send(
 					new MessageEmbed()
 						.setColor(config.err_colour)
-						.setDescription(`:x: Alsjeblieft wacht ${timeLeft.toFixed(1)} seconden bevoor je \`${command.name}\` opnieuw gebruikt.`)
-						.setFooter(guild.name, guild.iconURL())
+						.setDescription(text.stillCooldown.replace("{{ cooldown }}", timeLeft.toFixed(1)).replace("{{ commandName }}", command.name))
+						.setFooter(config.serverName, guild.iconURL())
 				);
 			}
 		}
@@ -95,11 +100,11 @@ module.exports = {
 
 		try {
 			command.execute(client, message, args, {config, Ticket, Solicitation, Setting});
-			log.console(`${message.author.tag} used the '${command.name}' command`);
+			log.console(logText.userUsedCommand.replace("{{ authorTag }}", message.author.tag).replace("{{ commandName }}", command.name));
 		} catch (error) {
-			log.warn(`An error occurred whilst executing the '${command.name}' command`);
+			log.warn(logText.errorWhileExecutingCommand.replace("{{ commandName }}", command.name));
 			log.error(error);
-			message.channel.send(`:x: Een ging iets fout tijdens het uitvoeren van  \`${command.name}\`.`);
+			message.channel.send(returnText.errorWithCommand.replace("{{ commandName }}", command.name));
 		}
 	}
 };

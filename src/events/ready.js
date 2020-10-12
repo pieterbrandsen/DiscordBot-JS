@@ -2,12 +2,17 @@
 
 const ChildLogger = require('leekslazylogger').ChildLogger;
 const log = new ChildLogger();
-const config = require('../../user/' + require('../').config);
+
+const languageConfig = require(`../../user/languages/${require('../../user/config').language}`);
+const eventObject = languageConfig.events.ready;
+const text = eventObject.text;
+const returnText = eventObject.returnText;
+const logText = eventObject.logText;
 
 module.exports = {
 	event: 'ready',
-	execute(client) {
-		log.success(`Authenticated as ${client.user.tag}`);
+	execute(client, args, {config}) {
+		log.success(logText.succesfullyAuthenticated.replace("{{ botTag }}", client.user.tag));
 			
 		const updatePresence = () => {
 			let num = Math.floor(Math.random() * config.activities.length);
@@ -17,7 +22,7 @@ module.exports = {
 					type: config.activity_types[num]
 				}
 			}).catch(log.error);
-			log.debug(`Updated presence: ${config.activity_types[num]} ${config.activities[num]}`);
+			log.debug(logText.updatedPressence.replace("{{ activityType }}", config.activity_types[num]).replace("{{ activityText }}", config.activities[num]));
 		};
 		
 		updatePresence();
@@ -26,15 +31,15 @@ module.exports = {
 		}, 15000);
 		
 		function updateServerStatus() {
-			const fiveMServerStatus = require('../modules/fiveMServerStats');
+			const fiveMServerStatus = require('../modules/fiveMServerPlayers.js');
 			fiveMServerStatus.execute(client);
 		}
-		client.setInterval(updateServerStatus, config.UPDATE_TIME);
+		client.setInterval(updateServerStatus, config.reloadTime);
 		
-		if (client.guilds.cache.get(config.guild).member(client.user).hasPermission('ADMINISTRATOR', false)) 
-			log.success('\'ADMINISTRATOR\' permission has been granted');
+		if (client.guilds.cache.get(config.guildId).member(client.user).hasPermission('ADMINISTRATOR', false)) 
+			log.success(logText.administratorGranted);
 		else
-			log.warn('Bot does not have \'ADMINISTRATOR\' permission');
+			log.warn(logText.administratorMissing);
 		
 	}
 };

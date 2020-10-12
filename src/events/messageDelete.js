@@ -4,6 +4,12 @@ const ChildLogger = require('leekslazylogger').ChildLogger;
 const log = new ChildLogger();
 const fs = require('fs');
 
+const languageConfig = require(`../../user/languages/${require('../../user/config').language}`);
+const eventObject = languageConfig.events.messageDelete;
+const text = eventObject.text;
+const returnText = eventObject.returnText;
+const logText = eventObject.logText;
+
 module.exports = {
 	event: 'messageDelete',
 	async execute(client, [message], {config, Ticket}) {
@@ -14,7 +20,7 @@ module.exports = {
 			try {
 				await message.fetch();
 			} catch (err) {
-				log.warn('Failed to fetch deleted messaged');
+				log.warn(logText.cantFetch);
 				log.error(err.message);
 				return;
 			}

@@ -4,10 +4,11 @@ const log = new ChildLogger();
 const { MessageEmbed, DiscordAPIError } = require('discord.js');
 
 const languageConfig = require(`../../../user/languages/${require('../../../user/config').language}`);
-const commandText = languageConfig.admin.announcement.command;
-const text = languageConfig.admin.announcement.text;
-const returnText = languageConfig.admin.announcement.returnText;
-const logText = languageConfig.admin.announcement.logText;
+const commandObject = languageConfig.commands.admin.announcement;
+const commandText = commandObject.command;
+const text = commandObject.text;
+const returnText = commandObject.returnText;
+const logText = commandObject.logText;
 
 module.exports = {
     name: commandText.name,
@@ -27,7 +28,7 @@ module.exports = {
                 .setColor(config.err_colour)
                 .setTitle(text.embedTitle)
                 .setDescription(`**${args.join(' ')}**`)
-                .setFooter(guild.name, guild.iconURL())
+                .setFooter(config.serverName, guild.iconURL())
             );
             log.warn(logText.sentSuccesful
 				.replace("{{ messageText }}", `\`${args.join(' ')}\``));

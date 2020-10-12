@@ -2,6 +2,12 @@ const ytdlDiscord = require("ytdl-core-discord");
 const scdl = require("soundcloud-downloader");
 const { canModifyQueue } = require("../modules/functions/IsInVoiceChannel");
 
+const languageConfig = require(`../../user/languages/${require('../../user/config').language}`);
+const moduleObject = languageConfig.modules.play;
+const text = moduleObject.text;
+const returnText = moduleObject.returnText;
+const logText = moduleObject.logText;
+
 module.exports = {
   async play(song, message) {
     const { music } = require("../../user/config");
@@ -10,7 +16,7 @@ module.exports = {
     if (!song) {
       queue.channel.leave();
       message.client.queue.delete(message.guild.id);
-      return queue.textChannel.send("🚫 Music queue ended.").catch(console.error);
+      return queue.textChannel.send(text.queueEnded).catch(console.error);
     }
 
     let stream = null;
@@ -61,11 +67,11 @@ module.exports = {
     dispatcher.setVolumeLogarithmic(queue.volume / 100);
 
     try {
-      var playingMessage = await queue.textChannel.send(`🎶 Started playing: **${song.title}** ${song.url}`);
-      await playingMessage.react("⏭");
-      await playingMessage.react("⏯");
-      await playingMessage.react("🔁");
-      await playingMessage.react("⏹");
+      var playingMessage = await queue.textChannel.send(text.startedPlaying.replace("{{ songTitle }}", song.title).replace("{{ songUrl }}", song.url));
+      await playingMessage.react(text.playingReactions[0]);
+      await playingMessage.react(text.playingReactions[1]);
+      await playingMessage.react(text.playingReactions[2]);
+      await playingMessage.react(text.playingReactions[3]);
     } catch (error) {
       console.error(error);
     }
@@ -85,7 +91,7 @@ module.exports = {
           reaction.users.remove(user).catch(console.error);
           if (!canModifyQueue(member)) return;
           queue.connection.dispatcher.end();
-          queue.textChannel.send(`${user} ⏩ skipped the song`).catch(console.error);
+          queue.textChannel.send(text.userSkippedSong.replace("{{ user }}", user)).catch(console.error);
           collector.stop();
           break;
 
@@ -95,11 +101,11 @@ module.exports = {
           if (queue.playing) {
             queue.playing = !queue.playing;
             queue.connection.dispatcher.pause(true);
-            queue.textChannel.send(`${user} ⏸ paused the music.`).catch(console.error);
+            queue.textChannel.send(text.userPausedSong.replace("{{ user }}", user)).catch(console.error);
           } else {
             queue.playing = !queue.playing;
             queue.connection.dispatcher.resume();
-            queue.textChannel.send(`${user} ▶ resumed the music!`).catch(console.error);
+            queue.textChannel.send(text.userResumedSong.replace("{{ user }}", user)).catch(console.error);
           }
           break;
 
@@ -107,14 +113,14 @@ module.exports = {
           reaction.users.remove(user).catch(console.error);
           if (!canModifyQueue(member)) return;
           queue.loop = !queue.loop;
-          queue.textChannel.send(`Loop is now ${queue.loop ? "**on**" : "**off**"}`).catch(console.error);
+          queue.textChannel.send(`${text.loopIsNow[0]} ${queue.loop ? text.loopIsNow[1] : text.loopIsNow[2]}`).catch(console.error);
           break;
 
         case "⏹":
           reaction.users.remove(user).catch(console.error);
           if (!canModifyQueue(member)) return;
           queue.songs = [];
-          queue.textChannel.send(`${user} ⏹ stopped the music!`).catch(console.error);
+          queue.textChannel.send(text.userStoppedSong.replace("{{ user }}", user)).catch(console.error);
           try {
             queue.connection.dispatcher.end();
           } catch (error) {

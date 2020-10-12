@@ -1,11 +1,14 @@
 const ChildLogger = require('leekslazylogger').ChildLogger;
 const log = new ChildLogger();
 
+const Discord = require('discord.js');
+
 const languageConfig = require(`../../../user/languages/${require('../../../user/config').language}`);
-const commandText = languageConfig.admin.fiveMServerStatus.command;
-const text = languageConfig.admin.fiveMServerStatus.text;
-const returnText = languageConfig.admin.fiveMServerStatus.returnText;
-const logText = languageConfig.admin.fiveMServerStatus.logText;
+const commandObject = languageConfig.commands.admin.fiveMServerStatus;
+const commandText = commandObject.command;
+const text = commandObject.text;
+const returnText = commandObject.returnText;
+const logText = commandObject.logText;
 
 module.exports = {
 	name: commandText.name,
@@ -16,9 +19,13 @@ module.exports = {
 	args: commandText.args,
     permission: commandText.permission,
 	execute(client, message, args) {
+		message.channel.send("NOT IN USE YET");
+		// Gaat niet werken zonder een database die hij kan updaten met deze message. //
+
+		
 		// try {
 		// 	let status = message.content.substr(7).trim();
-		// 	let embed =  new Discord.RichEmbed()
+		// 	let embed =  new Discord.MessageEmbed()
 		// 	.setAuthor(message.member.nickname ? message.member.nickname : message.author.tag,message.author.displayAvatarURL())
 		// 	.setColor(config.colour)
 		// 	.setTitle('Updated status message')

@@ -1,17 +1,31 @@
 const { canModifyQueue } = require("../../modules/functions/IsInVoiceChannel");
 
+const languageConfig = require(`../../../user/languages/${require('../../../user/config').language}`);
+const commandObject = languageConfig.commands.music.remove;
+const commandText = commandObject.command;
+const text = commandObject.text;
+const returnText = commandObject.returnText;
+const logText = commandObject.logText;
+
 module.exports = {
-  name: "remove",
-  description: "Remove song from the queue",
+  name: commandText.name,
+  description: commandText.description,
+  usage: commandText.usage,
+	aliases: commandText.aliases,
+  example: commandText.example,
+	args: commandText.args,
+  permission: commandText.permission,
   execute(client, message, args) {
     const queue = message.client.queue.get(message.guild.id);
-    if (!queue) return message.channel.send("There is no queue.").catch(console.error);
+    if (!queue) return message.channel.send(returnText.noQueue).catch(console.error);
     if (!canModifyQueue(message.member)) return;
     
-    if (!args.length) return message.reply(`Usage: ${message.client.prefix}remove <Queue Number>`);
-    if (isNaN(args[0])) return message.reply(`Usage: ${message.client.prefix}remove <Queue Number>`);
+    if (isNaN(args[0])) return message.reply(returnText.usage);
 
     const song = queue.songs.splice(args[0] - 1, 1);
-    queue.textChannel.send(`${message.author} ❌ removed **${song[0].title}** from the queue.`);
+    if (song.length > 0)
+    queue.textChannel.send(returnText.removedSong.replace("{{ author }}", message.author).replace("{{ songTitle }}", song[0].title));
+    else 
+    queue.textChannel.send(returnText.coudntFindSong);
   }
 };

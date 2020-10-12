@@ -7,15 +7,22 @@ const fetchTimeout = require('fetch-timeout');
 
 const USER_AGENT = `${config.name} ${require('../../package.json').version} , Node ${process.version} (${process.platform}${process.arch})`;
 
+const languageConfig = require(`../../user/languages/${require('../../user/config').language}`);
+const moduleObject = languageConfig.modules.fiveMServerPlayers;
+const text = moduleObject.text;
+const returnText = moduleObject.returnText;
+const logText = moduleObject.logText;
+
 module.exports = {
     async execute(client) {
-        if (!config.serverStatus.enabled) break;
-        const guild = client.guilds.cache.get(config.guild);
+        if (!config.serverPlayers.enabled) return;
+
+        const guild = client.guilds.cache.get(config.guildId);
 
 
-        const URL_SERVER = `http://${config.ip}`;
-        const URL_PLAYERS = new URL('/players.json',`http://${config.ip}`).toString();
-        const URL_INFO = new URL('/info.json',`http://${config.ip}`).toString();
+        const URL_SERVER = `http://${config.serverIp}`;
+        const URL_PLAYERS = new URL('/players.json',`http://${config.serverIp}`).toString();
+        const URL_INFO = new URL('/info.json',`http://${config.serverIp}`).toString();
         const MAX_PLAYERS = 64;
         const TICK_MAX = 1 << 9; // max bits for TICK_N
         const FETCH_TIMEOUT = 900;
@@ -25,8 +32,8 @@ module.exports = {
             'headers': { 'User-Agent': USER_AGENT }
         };
 
-        const CHANNEL_ID = config.serverStatusChannelId;
-        const MESSAGE_ID = config.serverStatusMessageId;
+        const CHANNEL_ID = config.serverPlayersChannelId;
+        const MESSAGE_ID = config.serverPlayersMessageId;
 
         var TICK_N = 0;
         var MESSAGE;
@@ -43,7 +50,7 @@ module.exports = {
                 resolved = true;
                 resolve(true);
                 } else {
-                log.error('Loop callback called after timeout');
+                log.error(logText.loopCallback);
                 reject(null);
                 }
             })
@@ -79,9 +86,9 @@ module.exports = {
         const sendOrUpdate = async function(embed) {
             if (MESSAGE !== undefined) {
             MESSAGE.edit(embed).then(() => {
-                log.debug('Update success');
+                log.debug(logText.updateSucces);
             }).catch(() => {
-                log.eror('Update failed');
+                log.eror(logText.updateFailed);
             })
             } else {
                 let channel = client.channels.cache.get(CHANNEL_ID);
@@ -90,33 +97,33 @@ module.exports = {
                     channel.messages.fetch(MESSAGE_ID).then((message) => {
                     MESSAGE = message;
                     message.edit(embed).then(() => {
-                        log.info('Update success');
+                        log.info(logText.updateSucces);
                     }).catch(() => {
-                        log.error('Update failed');
+                        log.error(logText.updateFailed);
                     });
                     }).catch(() => {
                     channel.send(embed).then((message) => {
                         MESSAGE = message;
-                        log.info(`Sent message (${message.id})`);
+                        log.info(logText.sentNewMessage.replace("{{ messageId }}", message.id));
                     }).catch(console.error);
                     })
                 } else {
-                    log.error('Update channel not set');
+                    log.error(logText.noUpdateChannel);
                 }
             }
         };
 
         const UpdateEmbed = function() {
-            let dot = TICK_N % 2 === 0 ? 'Groesbeek' : 'Roleplay';
+            let dot = TICK_N % 2 === 0 ? config.serverName : config.serverName;
             let embed = new Discord.MessageEmbed()
-            .setAuthor(`${config.name} Server Status`, guild.iconURL())
+            .setAuthor(returnText.updateEmbedTitle.replace("{{ serverName }}", config.serverName), guild.iconURL())
             .setColor(config.colour)
-            .setFooter(TICK_N % 2 === 0 ? `⚪ ${config.name}` : `⚫ ${config.name}`)
+            .setFooter(TICK_N % 2 === 0 ? `⚪ ${config.serverName}` : `⚫ ${config.serverName}`)
             .setTimestamp(new Date())
-            .addField(`\n\u200b\nHoe kan je de server joinen?`,`Je kan de server joinen doormiddel van **${config.prefix}ip** te typen. Onderaan staat de server status om te kijken hoeveel mensen er online zijn en in de wachtrij staan\n\u200b\n`,false)
+            .addField(returnText.updateEmbedFields[0], returnText.updateEmbedFields[1].replace("{{ prefix }}", config.prefix),false)
             if (STATUS !== undefined)
             {
-            embed.addField(':warning: Actuele server status:',`${STATUS}\n\u200b\n`);
+            embed.addField(returnText.updateEmbedFields[2],`${STATUS}\n\u200b\n`);
             embed.setColor(0xff5d00)
             }
             return embed;
@@ -124,12 +131,12 @@ module.exports = {
 
         const offline = function() {
             // log.info(Array.from(arguments));
-            if (LAST_COUNT !== null) log.info(`Server offline ${URL_SERVER} (${URL_PLAYERS})`);
+            if (LAST_COUNT !== null) log.info(`${logText.serverOffline} ${URL_SERVER} (${URL_PLAYERS})`);
             let embed = UpdateEmbed()
             .setColor(0xff0000)
-            .addField('Server Status',':x: Offline',true)
-            .addField('Wachtrij','?',true)
-            .addField('Online spelers','?\n\u200b\n',true);
+            .addField(returnText.offlineEmbedTitle[0],returnText.offlineEmbedTitle[1],true)
+            .addField(returnText.offlineEmbedTitle[2],returnText.offlineEmbedTitle[3],true)
+            .addField(returnText.offlineEmbedTitle[4],returnText.offlineEmbedTitle[5],true);
             sendOrUpdate(embed);
             LAST_COUNT = null;
         };
@@ -137,12 +144,12 @@ module.exports = {
         const updateMessage = function() {
             getVars().then((vars) => {
                 getPlayers().then((players) => {
-                    if (players.length !== LAST_COUNT) log.info(`${players.length} players`);
+                    if (players.length !== LAST_COUNT) log.info(logText.playerCount.replace("{{ playerCount }}", players.length));
                     let queue = vars['Queue'];
                     let embed = UpdateEmbed()
-                    .addField('Server Status',':white_check_mark: Online',true)
-                    .addField('Wachtrij',queue === 'Enabled' || queue === undefined ? '0' : queue.split(':')[1].trim(),true)
-                    .addField('Online spelers',`${players.length}/${MAX_PLAYERS}\n\u200b\n`,true);
+                    .addField(returnText.updateMessageEmbedFields[0],returnText.updateMessageEmbedFields[1],true)
+                    .addField(returnText.updateMessageEmbedFields[2],queue === 'Enabled' || queue === undefined ? '0' : queue.split(':')[1].trim(),true)
+                    .addField(returnText.updateMessageEmbedFields[3],`${players.length}/${MAX_PLAYERS}\n\u200b\n`,true);
                     // .addField('\u200b','\u200b\n\u200b\n',true);
                     if (players.length > 0) {
                     // method D
@@ -152,7 +159,7 @@ module.exports = {
                     // for (var i=0;i<players.length;i++) {
                     //   fields[i%4 >= 2 ? 1 : 0] += `${players[i].name}${i % 2 === 0 ? '\u200e' : '\n\u200f'}`;
                     // }
-                    fields[0] = `**Inwoners:**\n`;
+                    fields[0] = text.usersname;
                     for (var i=0;i<players.length;i++) {
                         fields[(i+1)%fieldCount] += `${players[i].name.substr(0,12)}\n`; // first 12 characters of players name
                     }

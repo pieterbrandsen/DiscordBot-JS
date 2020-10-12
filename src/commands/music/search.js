@@ -3,24 +3,34 @@ const { music } = require("../../../user/config");
 const YouTubeAPI = require("simple-youtube-api");
 const youtube = new YouTubeAPI(music.YOUTUBE_API_KEY);
 
+const languageConfig = require(`../../../user/languages/${require('../../../user/config').language}`);
+const commandObject = languageConfig.commands.music.search;
+const commandText = commandObject.command;
+const text = commandObject.text;
+const returnText = commandObject.returnText;
+const logText = commandObject.logText;
+
 module.exports = {
-  name: "search",
-  description: "Search and select videos to play",
-  async execute(client, message, args) {
-    if (!args.length)
-      return message.reply(`Usage: ${message.client.prefix}${module.exports.name} <Video Name>`).catch(console.error);
+  name: commandText.name,
+  description: commandText.description,
+  usage: commandText.usage,
+	aliases: commandText.aliases,
+  example: commandText.example,
+	args: commandText.args,
+  permission: commandText.permission,
+  async execute(client, message, args, {config}) {
     if (message.channel.activeCollector)
-      return message.reply("A message collector is already active in this channel.");
+      return message.reply(returnText.activeCollector);
     if (!message.member.voice.channel)
-      return message.reply("You need to join a voice channel first!").catch(console.error);
+      return message.reply(returnText.notInVoiceChannel).catch(console.error);
 
     const search = args.join(" ");
 
     let resultsEmbed = new MessageEmbed()
-      .setTitle(`**Reply with the song number you want to play**`)
-      .setDescription(`Results for: ${search}`)
-      .setColor("#F8AA2A");
-
+      .setTitle(text.embedTitle)
+      .setDescription(text.embedDescription.replace("{{ searchCommand }}", search))
+      .setColor(config.colour)
+      .setFooter(config.serverName, message.guild.iconURL());
     try {
       const results = await youtube.searchVideos(search, 10);
       results.map((video, index) => resultsEmbed.addField(video.shortURL, `${index + 1}. ${video.title}`));
@@ -37,7 +47,7 @@ module.exports = {
       const choice = resultsEmbed.fields[parseInt(response.first()) - 1].name;
 
       message.channel.activeCollector = false;
-      message.client.commands.get("play").execute(message, [choice]);
+      message.client.commands.get("play").execute(client, message, [choice]);
       resultsMessage.delete().catch(console.error);
     } catch (error) {
       console.error(error);

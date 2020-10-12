@@ -5,6 +5,12 @@ const log = new ChildLogger();
 const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
 
+const languageConfig = require(`../../user/languages/${require('../../user/config').language}`);
+const eventObject = languageConfig.events.messageReactionAdd;
+const text = eventObject.text;
+const returnText = eventObject.returnText;
+const logText = eventObject.logText;
+
 module.exports = {
 	event: 'messageReactionAdd',
 	async execute(client, [r, u], {config, Ticket, Setting}) {
@@ -24,18 +30,18 @@ module.exports = {
 
 		if(u.id === client.user.id) return;
 
-		if (r.emoji.name !== config.panel.reaction && r.emoji.id !== config.panel.reaction) return;
+		if (r.emoji.name !== config.tickets.panelReaction && r.emoji.id !== config.tickets.panelReaction) return;
 
 		let channel = r.message.channel;
 
-		const supportRole = channel.guild.roles.cache.get(config.staff_role);
+		const supportRole = channel.guild.roles.cache.get(config.staffRoleId);
 		if (!supportRole)
 			return channel.send(
 				new MessageEmbed()
 					.setColor(config.err_colour)
-					.setTitle(':x: **Fout**')
-					.setDescription(`${config.name} is niet juist geconfigureerd. Kan geen staff role vinden met het id \`${config.staff_role}\``)
-					.setFooter(channel.guild.name, channel.guild.iconURL())
+					.setTitle(returnText.noStaffEmbedTitle)
+					.setDescription(returnText.noStaffEmbedDescription.replace("{{ serverName }}", config.serverName).replace("{{ staffRoleId }}", config.staffRoleId))
+					.setFooter(channel.config.serverName, channel.guild.iconURL())
 			);
 
 
@@ -66,9 +72,9 @@ module.exports = {
 					new MessageEmbed()
 						.setColor(config.err_colour)
 						.setAuthor(u.username, u.displayAvatarURL())
-						.setTitle(`:x: **Je hebt al ${tickets.count} of meer open tickets**`)
-						.setDescription(`Gebruik \`${config.prefix}sluit\` om een onnodig ticket te sluiten.\n\n${ticketList.join(',\n')}`)
-						.setFooter(channel.guild.name, channel.guild.iconURL())
+						.setTitle(returnText.maxTicketsEmbedTitle.replace("{{ count }}", tickets.count))
+						.setDescription(returnText.maxTicketsEmbedDescription.replace("{{ prefix }}", config.prefix).replace("{{ ticketList }}", ticketList.join(',\n')))
+						.setFooter(channel.config.serverName, channel.guild.iconURL())
 				);
 		
 
@@ -78,9 +84,9 @@ module.exports = {
 					new MessageEmbed()
 						.setColor(config.err_colour)
 						.setAuthor(u.username, u.displayAvatarURL())
-						.setTitle(`:x: **Je hebt al ${tickets.count} of meer open tickets**`)
-						.setDescription(`Gebruik \`${config.prefix}sluit\` om een onnodig ticket te sluiten.\n\n${ticketList.join(',\n')}`)
-						.setFooter(channel.guild.name + ' | Dit bericht wordt verwijderd in 15 seconden.', channel.guild.iconURL())
+						.setTitle(returnText.maxTicketsEmbedTitle.replace("{{ count }}", tickets.count))
+						.setDescription(returnText.maxTicketsEmbedDescription.replace("{{ prefix }}", config.prefix).replace("{{ ticketList }}", ticketList.join(',\n')))
+						.setFooter(returnText.noStaffEmbedFooter.replace("{{ serverName }}", config.serverName), channel.guild.iconURL())
 				);
 		
 				return m.delete({ timeout: 15000 });
@@ -89,7 +95,7 @@ module.exports = {
 			
 		}
 
-		let topic = 'Geen onderwerp gegeven';
+		let topic = text.noSubject;
 
 		let ticket = await Ticket.create({
 			channel: '',
@@ -99,7 +105,7 @@ module.exports = {
 			topic: topic
 		});
 
-		let name = 'ticket-' + ticket.id;
+		let name = `ticket-${ticket.id}`;
 
 		channel.guild.channels.create(name, {
 			type: 'text',
@@ -118,7 +124,7 @@ module.exports = {
 				allow: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY']
 			}
 			],
-			reason: 'Lid maakte een ticket kanaal aan.'
+			reason: text.madeTicketSubject
 		}).then(async c => {
 
 			Ticket.update({
@@ -134,7 +140,7 @@ module.exports = {
 			let ping;
 			switch (config.tickets.ping) {
 			case 'staff':
-				ping = `<@&${config.staff_role}>,\n`;
+				ping = `<@&${config.staffRoleId}>,\n`;
 				break;
 			case false:
 				ping = '';
@@ -142,10 +148,9 @@ module.exports = {
 			default:
 				ping = `@${config.tickets.ping},\n`;
 			}
+			await c.send(text.madeTicket.replace("{{ ping }}", ping).replace("{{ username }}", u.username));
 
-			await c.send(`${ping} ${u.username} heeft een ticket gemaakt`);
-
-			if (config.tickets.send_img) {
+			if (config.tickets.sendImg) {
 				const images = fs.readdirSync('user/images');
 				await c.send({
 					files: [
@@ -155,18 +160,14 @@ module.exports = {
 				});
 			}
 
-			let text = config.tickets.text
-				.replace('{{ name }}', u.username)
-				.replace('{{ tag }}', u);
-
 
 			let w = await c.send(
 				new MessageEmbed()
 					.setColor(config.colour)
 					.setAuthor(u.username, u.displayAvatarURL())
-					.setDescription(text)
-					.addField('Onderwerp', `\`${topic}\` (via paneel)`)
-					.setFooter(channel.guild.name, channel.guild.iconURL())
+					.setDescription(text.createdTicketUsingPanel[0].replace("{{ username }}", u.username))
+					.addField(text.createdTicketUsingPanel[1], text.createdTicketUsingPanel[2].replace("{{ topic }}", topic))
+					.setFooter(channel.config.serverName, channel.guild.iconURL())
 			);
 
 			if (config.tickets.pin)
@@ -178,15 +179,15 @@ module.exports = {
 					new MessageEmbed()
 						.setColor(config.colour)
 						.setAuthor(u.username, u.displayAvatarURL())
-						.setTitle('Nieuw ticket (via paneel)')
+						.setTitle(returnText.newTicketEmbedTitle)
 						.setDescription(`\`${topic}\``)
-						.addField('Maker', u, true)
-						.addField('Kanaal', c, true)
-						.setFooter(channel.guild.name, channel.guild.iconURL())
+						.addField(returnText.newTicketEmbedFields[0], u, true)
+						.addField(returnText.newTicketEmbedFields[1], c, true)
+						.setFooter(channel.config.serverName, channel.guild.iconURL())
 						.setTimestamp()
 				);
 
-			log.info(`${u.tag} created a new ticket (#${name}) via panel`);
+			log.info(logText.userCreatedNewTicket.replace("{{ authorTag }}", u.tag).replace("{{ channelName }}", name));
 
 
 		}).catch(log.error);

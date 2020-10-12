@@ -11,4 +11,3 @@ user/transcripts/Solicitation/text/*.txt
 user/transcripts/Solicitation/raw/*.log
 user/transcripts/Solicitation/raw/entities/*.json
 user/config.js
-user/.env

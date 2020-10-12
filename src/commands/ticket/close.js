@@ -8,28 +8,36 @@ const {
 const fs = require('fs');
 const archive = require('../../modules/archive');
 
+const languageConfig = require(`../../../user/languages/${require('../../../user/config').language}`);
+const commandObject = languageConfig.commands.ticket.close;
+const commandText = commandObject.command;
+const text = commandObject.text;
+const returnText = commandObject.returnText;
+const logText = commandObject.logText;
+
 module.exports = {
-	name: 'sluit',
-	description: 'Sluit een ticket; vermeld ticket kanaal, of het kanaal waar het commando in gebruikt wordt.',
-	usage: '[ticket]',
-	aliases: ['close'],
-	example: 'sluit #ticket-17',
-	args: false,
+	name: commandText.name,
+	description: commandText.description,
+	usage: commandText.usage,
+	aliases: commandText.aliases,
+	example: commandText.example,
+	args: commandText.args,
+	permission: commandText.permission,
 	async execute(client, message, args, {
 		config,
 		Ticket
 	}) {
 
-		const guild = client.guilds.cache.get(config.guild);
+		const guild = client.guilds.cache.get(config.guildId);
 
 		const notTicket = new MessageEmbed()
 			.setColor(config.err_colour)
 			.setAuthor(message.author.username, message.author.displayAvatarURL())
-			.setTitle(':x: **Dit is geen ticket kanaal**')
-			.setDescription('Gebruik dit commando om een ticket kanaal te sluiten in het ticket kanaal of vermeld het ticket kanaal.')
-			.addField('Gebruik', `\`${config.prefix}${this.name} ${this.usage}\`\n`)
-			.addField('Help', `typ \`${config.prefix}help ${this.name}\` voor meer informatie`)
-			.setFooter(guild.name, guild.iconURL());
+			.setTitle(returnText.notATicketEmbedTitle[0])
+			.setDescription(returnText.notATicketDescription[0])
+			.addField(returnText.notATicketEmbedField[0], returnText.notATicketEmbedField[1].replace("{{ prefix }}", config.prefix).replace("{{ commandName }}", this.name).replace("{{ commandUsage }}", this.usage))
+			.addField(returnText.notATicketEmbedField[2], returnText.notATicketEmbedField[3].replace("{{ prefix }}", config.prefix).replace("{{ commandName }}", this.name))
+			.setFooter(config.serverName, guild.iconURL());
 
 		let ticket;
 		let channel = message.mentions.channels.first();
@@ -55,37 +63,37 @@ module.exports = {
 			});
 			if (!ticket) {
 				notTicket
-					.setTitle(':x: **Kanaal is niet een ticket**')
-					.setDescription(`${channel} is een ticket kanaal.`);
+					.setTitle(returnText.notAticketEmbedTitle[1])
+					.setDescription(returnText.notATickerDescription[1].replace("{{ channel }}", channel))
 				return message.channel.send(notTicket);
 			}
 
-			if (message.author.id !== ticket.creator && !message.member.roles.cache.has(config.staff_role))
+			if (message.author.id !== ticket.creator && !message.member.roles.cache.has(config.staffRoleId))
 				return channel.send(
 					new MessageEmbed()
-						.setColor(config.err_colour)
-						.setAuthor(message.author.username, message.author.displayAvatarURL())
-						.setTitle(':x: **Geen permissies**')
-						.setDescription(`Je hebt geen permissies om ${channel} te sluiten omdat het niet jouw ticket is of je bent geen staff.`)
-						.addField('Gebruik', `\`${config.prefix}${this.name} ${this.usage}\`\n`)
-						.addField('Help', `typ \`${config.prefix}help ${this.name}\` voor meer informatie`)
-						.setFooter(guild.name, guild.iconURL())
+					.setColor(config.err_colour)
+					.setAuthor(message.author.username, message.author.displayAvatarURL())
+					.setTitle(returnText.noPermsEmbedTitle)
+					.setDescription(returnText.noPermsDescription.replace("{{ channel }}", channel)``)
+					.addField(returnText.noPermsEmbedField[0], returnText.noPermsEmbedField[1].replace("{{ prefix }}", config.prefix).replace("{{ commandName }}".replace("{{ commandUsage }}", this.usage)))
+					.addField(returnText.noPermsEmbedField[2], returnText.noPermsEmbedField[3].replace("{{ prefix }}", config.prefix).replace("{{ commandName }}"))
+					.setFooter(config.serverName, guild.iconURL())
 				);
 		}
 
 		let success;
 		let pre = fs.existsSync(`user/transcripts/ticket/text/${channel.id}.txt`) ||
 			fs.existsSync(`user/transcripts/raw/${channel.id}.log`) ?
-			`Je kan later een gearchiveerde versie zien met \`${config.prefix}transcript ${ticket.id}\`` :
+			text.viewTranscript.replace("{{ prefix }}", config.prefix).replace("{{ ticketId }}", ticket.id) :
 			'';
 
 		let confirm = await message.channel.send(
 			new MessageEmbed()
 				.setColor(config.colour)
 				.setAuthor(message.author.username, message.author.displayAvatarURL())
-				.setTitle(':grey_question: Weet je het zeker?')
-				.setDescription(`${pre}\n**Reageer met een :white_check_mark: om te conformeren.**`)
-				.setFooter(guild.name + ' | Verloopt in 15 seconden', guild.iconURL())
+				.setTitle(returnText.closeTicketEmbedTitle[0])
+				.setDescription(returnText.closeTicketEmbedDescription[0].replace("{{ pre }}",pre))
+				.setFooter(returnText.closeTicketEmbedFooter.replace("{{ serverName }}", config.serverName), guild.iconURL())
 		);
 
 		await confirm.react('✅');
@@ -101,9 +109,9 @@ module.exports = {
 					new MessageEmbed()
 						.setColor(config.colour)
 						.setAuthor(message.author.username, message.author.displayAvatarURL())
-						.setTitle('**Ticket gesloten**')
-						.setDescription(`Ticket gesloten door ${message.author}`)
-						.setFooter(guild.name, guild.iconURL())
+						.setTitle(returnText.closeTicketEmbedTitle[1])
+						.setDescription(returnText.closeTicketEmbedDescription[1].replace("{{ author }}", message.author))
+						.setFooter(config.serverName, guild.iconURL())
 				);
 
 			confirm.reactions.removeAll();
@@ -111,9 +119,9 @@ module.exports = {
 				new MessageEmbed()
 					.setColor(config.colour)
 					.setAuthor(message.author.username, message.author.displayAvatarURL())
-					.setTitle(`:white_check_mark: **Ticket ${ticket.id} gesloten**`)
-					.setDescription('Dit kanaal wordt automatisch verwijderd nadat de berichten gearchiveerd zijn.')
-					.setFooter(guild.name, guild.iconURL())
+					.setTitle(returnText.closeTicketEmbedTitle[2].replace("{{ ticketId }}", ticket.id))
+					.setDescription(returnText.closeTicketEmbedDescription[2])
+					.setFooter(config.serverName, guild.iconURL())
 			);
 
 			if (config.transcripts.text.enabled || config.transcripts.web.enabled) {
@@ -124,7 +132,7 @@ module.exports = {
 					try {
 						dm = u.dmChannel || await u.createDM();
 					} catch (e) {
-						log.warn(`Kon geen DM naar ${u.tag} sturen`);
+						log.warn(logText.cantDm.replace("{{ targetuser }}", u.tag));
 					}
 
 
@@ -133,7 +141,7 @@ module.exports = {
 						.setColor(config.colour)
 						.setAuthor(message.author.username, message.author.displayAvatarURL())
 						.setTitle(`Ticket ${ticket.id}`)
-						.setFooter(guild.name, guild.iconURL());
+						.setFooter(config.serverName, guild.iconURL());
 
 					if (fs.existsSync(`user/transcripts/ticket/text/${ticket.get('channel')}.txt`)) {
 						embed.addField('Text transcript', 'Zie bijlage');
@@ -152,7 +160,7 @@ module.exports = {
 						
 			
 					if (embed.fields.length < 1)
-						embed.setDescription(`Geen tekst archief is beschikbaar voor ticket ${ticket.id}`);
+						embed.setDescription(returnText.noArchive.replace("{{ ticketId }}", ticket.id));
 
 					res.embed = embed;
 
@@ -179,19 +187,19 @@ module.exports = {
 						.then(() => confirm.delete());
 			}, 5000);
 
-			log.info(`${message.author.tag} closed a ticket (#ticket-${ticket.id})`);
+			log.info(logText.closedTicket.replace("{{ authorTag }}", message.author.tag).replace("{{ ticketId }}", ticket.id));
 
 			if (config.logs.discord.enabled)
 				client.channels.cache.get(config.logs.discord.channel).send(
 					new MessageEmbed()
 						.setColor(config.colour)
 						.setAuthor(message.author.username, message.author.displayAvatarURL())
-						.setTitle('Ticket gesloten')
+						.setTitle(returnText.closeTicketEmbedTitle[1])
 						.setDescription(`\`${ticket.topic}\``)
-						.addField('Maker', `<@${ticket.creator}>`, true)
-						.addField('Gesloten door', message.author, true)
-						.addField('Id', `${ticket.id}`, true)
-						.setFooter(guild.name, guild.iconURL())
+						.addField(returnText.closedTicketEmbedField[0], `<@${ticket.creator}>`, true)
+						.addField(returnText.closedTicketEmbedField[1], message.author, true)
+						.addField(returnText.closedTicketEmbedField[2], `${ticket.id}`, true)
+						.setFooter(config.serverName, guild.iconURL())
 						.setTimestamp()
 				);
 		});
@@ -204,9 +212,9 @@ module.exports = {
 					new MessageEmbed()
 						.setColor(config.err_colour)
 						.setAuthor(message.author.username, message.author.displayAvatarURL())
-						.setTitle(':x: **Verlopen**')
-						.setDescription('Je deed er te lang over om te reageren; Conformatie mislukt.')
-						.setFooter(guild.name, guild.iconURL()));
+						.setTitle(returnText.expiredEmbedTitle)
+						.setDescription(returnText.expiredEmbedDescription)
+						.setFooter(config.serverName, guild.iconURL()));
 
 				message.delete({
 					timeout: 10000

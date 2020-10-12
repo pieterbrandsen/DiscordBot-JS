@@ -4,25 +4,32 @@ const { MessageEmbed } = require('discord.js');
 const ChildLogger = require('leekslazylogger').ChildLogger;
 const log = new ChildLogger();
 
-module.exports = {
-	name: 'verwijder',
-	description: 'Verwijder een lid van een ticket kanaal',
-	usage: '<@lid> [... #kanaal]',
-	aliases: ['remove'],
-	example: 'verwijder @member van #ticket-23',
-	args: true,
-	async execute(client, message, args, {config, Ticket}) {
+const languageConfig = require(`../../../user/languages/${require('../../../user/config').language}`);
+const commandObject = languageConfig.commands.ticket.remove;
+const commandText = commandObject.command;
+const text = commandObject.text;
+const returnText = commandObject.returnText;
+const logText = commandObject.logText;
 
-		const guild = client.guilds.cache.get(config.guild);
+module.exports = {
+	name: commandText.name,
+	description: commandText.description,
+	usage: commandText.usage,
+	aliases: commandText.aliases,
+	example: commandText.example,
+	args: commandText.args,
+	permission: commandText.permission,
+	async execute(client, message, args, {config, Ticket}) {
+		const guild = client.guilds.cache.get(config.guildId);
 
 		const notTicket = new MessageEmbed()
-			.setColor(config.err_colour)
-			.setAuthor(message.author.username, message.author.displayAvatarURL())
-			.setTitle(':x: **Dit is geen ticker kanaal**')
-			.setDescription('Gebruik dit commando in het ticket kanaal waar je het lid wilt verwijderen, of vermeld het kanaal.')
-			.addField('Gebruik', `\`${config.prefix}${this.name} ${this.usage}\`\n`)
-			.addField('Help', `typ \`${config.prefix}help ${this.name}\` voor meer informatie`)
-			.setFooter(guild.name, guild.iconURL());
+		.setColor(config.err_colour)
+		.setAuthor(message.author.username, message.author.displayAvatarURL())
+		.setTitle(returnText.notATicketEmbedTitle[0])
+		.setDescription(returnText.notATicketDescription[0])
+		.addField(returnText.notATicketEmbedField[0].replace("{{ prefix }}", config.prefix).replace("{{ commandName }}", this.name).replace("{{ commandUsage }}", this.usage))
+		.addField(this.name, returnText.notATicketEmbedField[1].replace("{{ prefix }}", config.prefix).replace("{{ commandName }}", this.name))
+		.setFooter(config.serverName, guild.iconURL());
 
 		let ticket;
 
@@ -36,26 +43,25 @@ module.exports = {
 				return message.channel.send(notTicket);
 
 		} else {
-		
 			ticket = await Ticket.findOne({ where: { channel: channel.id } });
 			if(!ticket) {
 				notTicket
-					.setTitle(':x: **Kanaal is geen ticket**')
-					.setDescription(`${channel} is niet een ticket kanaal.`);
+				.setTitle(returnText.notAticketEmbedTitle[1])
+				.setDescription(returnText.notATickerDescription[1].replace("{{ channel }}", channel))
 				return message.channel.send(notTicket);
 			}
 		}
 
-		if(message.author.id !== ticket.creator && !message.member.roles.cache.has(config.staff_role))
+		if(message.author.id !== ticket.creator && !message.member.roles.cache.has(config.staffRoleId))
 			return message.channel.send(
 				new MessageEmbed()
 					.setColor(config.err_colour)
 					.setAuthor(message.author.username, message.author.displayAvatarURL())
-					.setTitle(':x: **Geen permissie**')
-					.setDescription(`Je hebt geen permissie om in ${channel} een lid te verwijderen omdat het ticket niet van jou is of je bent geen staff.`)
-					.addField('Gebruik', `\`${config.prefix}${this.name} ${this.usage}\`\n`)
-					.addField('Help', `typ \`${config.prefix}help ${this.name}\` voor meer informatie`)
-					.setFooter(guild.name, guild.iconURL())
+					.setTitle(returnText.noPermsEmbedTitle)
+					.setDescription(returnText.noPermsDescription.replace("{{ channel }}", channel)``)
+					.addField(returnText.noPermsEmbedField[0], returnText.noPermsEmbedField[1].replace("{{ prefix }}", config.prefix).replace("{{ commandName }}".replace("{{ commandUsage }}", this.usage)))
+					.addField(returnText.noPermsEmbedField[2], returnText.noPermsEmbedField[3].replace("{{ prefix }}", config.prefix).replace("{{ commandName }}"))
+					.setFooter(config.serverName, guild.iconURL())
 			);
 		
 		
@@ -65,13 +71,13 @@ module.exports = {
 		if(!member) 
 			return message.channel.send(
 				new MessageEmbed()
-					.setColor(config.err_colour)
-					.setAuthor(message.author.username, message.author.displayAvatarURL())
-					.setTitle(':x: **Onbekend lid**')
-					.setDescription('Alsjeblieft vermeld een lid.')
-					.addField('Gebruik', `\`${config.prefix}${this.name} ${this.usage}\`\n`)
-					.addField('Help', `typ \`${config.prefix}help ${this.name}\` voor meer informatie`)
-					.setFooter(guild.name, guild.iconURL())
+				.setColor(config.err_colour)
+				.setAuthor(message.author.username, message.author.displayAvatarURL())
+				.setTitle(returnText.unknownUserEmbedTitle)
+				.setDescription(returnText.unknownUserEmbedDescription)
+				.addField(returnText.unknownUserEmbedField[0], returnText.unknownUserEmbedField[1].replace("{{ prefix }}", config.prefix).replace("{{ commandName }}".replace("{{ commandUsage }}", this.usage)))
+				.addField(returnText.unknownUserEmbedField[2], returnText.unknownUserEmbedField[3].replace("{{ prefix }}", config.prefix).replace("{{ commandName }}"))
+				.setFooter(config.serverName, guild.iconURL())
 			);
 
 		try {
@@ -85,25 +91,25 @@ module.exports = {
 			if(channel.id !== message.channel.id)
 				channel.send(
 					new MessageEmbed()
-						.setColor(config.colour)
-						.setAuthor(member.user.username, member.user.displayAvatarURL())
-						.setTitle('**Lid verwijderd**')
-						.setDescription(`${member} is verwijderd door ${message.author}`)
-						.setFooter(guild.name, guild.iconURL())
+					.setColor(config.colour)
+					.setAuthor(member.user.username, member.user.displayAvatarURL())
+					.setTitle(returnText.removedUserEmbedTitle)
+					.setDescription(returnText.removedUserEmbedDescription.replace("{{ removedUser }}", member).replace("{{ authorUser }}", message.author))
+					.setFooter(config.serverName, guild.iconURL())
 				);
 
 
 			
 			message.channel.send(
 				new MessageEmbed()
-					.setColor(config.colour)
-					.setAuthor(member.user.username, member.user.displayAvatarURL())
-					.setTitle(':white_check_mark: **Lid verwijderd**')
-					.setDescription(`${member} is verwijderd van <#${ticket.channel}>`)
-					.setFooter(guild.name, guild.iconURL())
+				.setColor(config.colour)
+				.setAuthor(member.user.username, member.user.displayAvatarURL())
+				.setTitle(returnText.userWasRemovedEmbedTitle)
+				.setDescription(returnText.userWasRemovedEmbedDescription.replace("{{ removedUser }}", member).replace("{{ channelId }}", ticket.channel))
+				.setFooter(config.serverName, guild.iconURL())
 			);
 			
-			log.info(`${message.author.tag} removed a user from a ticket (#${message.channel.id})`);
+			log.info(logText.removedUser.replace("{{ authorTag }}", message.author.tag).replace("{{ channelId }}", message.channel.id));
 		} catch (error) {
 			log.error(error);
 		}

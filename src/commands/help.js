@@ -4,13 +4,21 @@ const { readdirSync } = require('fs');
 const { join } = require('path');
 const { MessageEmbed } = require('discord.js');
 
+const languageConfig = require(`../../user/languages/${require('../../user/config').language}`);
+const commandObject = languageConfig.commands.help;
+const commandText = commandObject.command;
+const text = commandObject.text;
+const returnText = commandObject.returnText;
+const logText = commandObject.logText;
+
 module.exports = {
-	name: 'help',
-	description: 'Toon help menu',
-	usage: '[commando]',
-	aliases: ['h', 'hulp', 'command', 'commands'],
-	example: 'help new',
-	args: false,
+	name: commandText.name,
+	description: commandText.description,
+	usage: commandText.usage,
+	aliases: commandText.aliases,
+	example: commandText.example,
+	args: commandText.args,
+	permission: commandText.permission,
 	execute(client, message, args, { config }) {
 		const commandFolder = './src/commands/';
 		let commandCategories = [];
@@ -23,34 +31,35 @@ module.exports = {
 
 
 
-		const guild = client.guilds.cache.get(config.guild);
+		const guild = message.guild;
 
 		let commands = Array.from(client.commands.values());
 
+			// Categories
 		if (!args.length) {
 			let cmds = [];
 
 
 			for (let command of commandCategories) {
-				cmds.push(`**${message} ${command}** **·** Alle commands van commando **${command}**`);
+				cmds.push(text.commandCats.replace("{{ message }}", message.content.toLowerCase()).replace("{{ command }}", command).replace("{{ command }}", command));
 			}
 
 			message.channel.send(
 				new MessageEmbed()
-					.setTitle('Catogerieën')
+					.setTitle(text.accesableCatsEmbedTitle)
 					.setColor(config.colour)
 					.setDescription(
-						`\nDe commandos waar je toegang tot hebt zijn hieronder te zien. typ \`${config.prefix}help [catogerie]\` voor meer informatie over een gekozen commando.
+						`${text.accesableCommandsEmbedDescription[0].replace("{{ prefix }}", config.prefix)}
 						\n${cmds.join('\n\n')}
-						\nContact staff als je meer hulp of vragen hebt.`
+						${text.accesableCommandsEmbedDescription[1]}`
 					)
-					.setFooter(guild.name, guild.iconURL())
+					.setFooter(config.serverName, guild.iconURL())
 			).catch((error) => {
-				log.warn('Could not send help menu');
+				log.warn(logText.cantSend);
 				log.error(error);
 			});
-
-		} else if (commandCategories.indexOf(args[0]) != -1) {
+			// If you want to get all commands of a category //
+		} else if (commandCategories.indexOf(args[0].toLowerCase()) != -1) {
 			commands = readdirSync(`${commandFolder}/${args[0]}`).filter(file => file.endsWith('.js'));	
 			for (let i = 0; i < commands.length; i++) {
 				const command = require(`./${args[0]}/${commands[i]}`);
@@ -59,13 +68,13 @@ module.exports = {
 			
 			let cmds = [];
 			const allCommandsEmbed = new MessageEmbed()
-			.setTitle(`Command's`)
+			.setTitle(text.accesableCommandsEmbedTitle.replace("{{ cat }}", args[0]))
 			.setColor(config.colour)
 			.setDescription(
-				`\nDe commandos waar je toegang tot hebt zijn hieronder te zien. typ \`${config.prefix}help [command]\` voor meer informatie over een gekozen commando.
-				\n\nContact staff als je meer hulp of vragen hebt.`
+				`${text.accesableCommandsEmbedDescription[0].replace("{{ prefix }}", config.prefix)}")}
+				\n\n${text.accesableCommandsEmbedDescription[1]}`
 			)
-			.setFooter(guild.name, guild.iconURL())
+			.setFooter(config.serverName, guild.iconURL())
 
 			for (let command of Array.from(client.commands.values())) {
 				if (commands.indexOf(command.name) == -1 || command.name == "help") continue;
@@ -82,9 +91,10 @@ module.exports = {
 			}
 		
 			message.channel.send(allCommandsEmbed).catch((error) => {
-				log.warn('Could not send help menu');
+				log.warn(logText.cantSend);
 				log.error(error);
 			});
+			// Get command help
 		} else {
 			const name = args[0].toLowerCase();
 			const command = client.commands.get(name) || client.commands.find(c => c.aliases && c.aliases.includes(name));
@@ -93,7 +103,7 @@ module.exports = {
 				return message.channel.send(
 					new MessageEmbed()
 						.setColor(config.err_colour)
-						.setDescription(`:x: **Onjuist commando naam** (\`${config.prefix}help\`)`)
+						.setDescription(returnText.wrongCommandName.replace("{{ prefix }}", config.prefix))
 				);
 
 
@@ -106,17 +116,17 @@ module.exports = {
 			} else {
 				cmd.setDescription(command.description);
 			}
-			if (command.aliases) cmd.addField('aliassen', `\`${command.aliases.join(', ')}\``, true);
+			if (command.aliases) cmd.addField(text.alias, `\`${command.aliases.join(', ')}\``, true);
 
-			if (command.usage) cmd.addField('Gebruik', `\`${config.prefix}${command.name} ${command.usage}\``, false);
+			if (command.usage) cmd.addField(text.usage, `\`${config.prefix}${command.name} ${command.usage}\``, false);
 
-			if (command.usage) cmd.addField('Voorbeeld', `\`${config.prefix}${command.example}\``, false);
+			if (command.usage) cmd.addField(text.example, `\`${config.prefix}${command.example}\``, false);
 
 
 			if (command.permission && !message.member.hasPermission(command.permission)) {
-				cmd.addField('Benodigde Permissies', `\`${command.permission}\` :Rede: Je hebt geen permissies om dit commando te gebruiken.`, true);
+				cmd.addField(text.neededPermissions[0], `\`${command.permission}\` ${text.neededPermissions[1]}`, true);
 			} else {
-				cmd.addField('Benodigde Permissies', `\`${command.permission || 'geen'}\``, true);
+				cmd.addField(text.neededPermissions[0], `\`${command.permission || text.neededPermissions[2]}\``, true);
 			}
 
 			message.channel.send(cmd);

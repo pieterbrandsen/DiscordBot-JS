@@ -3,37 +3,40 @@ const log = new ChildLogger();
 
 const { MessageEmbed } = require('discord.js');
 
+const languageConfig = require(`../../../user/languages/${require('../../../user/config').language}`);
+const commandObject = languageConfig.commands.basic.ip;
+const commandText = commandObject.command;
+const text = commandObject.text;
+const returnText = commandObject.returnText;
+const logText = commandObject.logText;
+
 module.exports = {
-    name: 'ip',
-    description: 'Stuurt het IP naar de server',
-    cooldown: 5,
-    usage: '',
-	aliases: ['connect'],
-	example: 'ip',
-	args: false,
+	name: commandText.name,
+    description: commandText.description,
+    cooldown: commandText.cooldown,
+    usage: commandText.usage,
+	aliases: commandText.aliases,
+    example: commandText.example,
+	args: commandText.args,
+    permission: commandText.permission,
     async execute(client, message, args, {config}) {
-        // Connect ${config.ip}
-        const guild = client.guilds.cache.get(config.guild);
+        const guild = message.guild;
         const embed = new MessageEmbed()
         .setColor(config.colour)
         .setAuthor(message.author.username, message.author.displayAvatarURL())
-        .setTitle(`**Hallo ${message.author.username}, je had !ip gedaan om te connecten met ${config.name}**`)
-        .setDescription(`
-
-        Volg deze stappen om te connecten!
-
-        Stap 1: Open FiveM
-        Stap 2: Druk F8 -> **KOMT BINNENKORT**
-        
-        **Veel Plezier in onze Stad!**`)
-        .setFooter(guild.name, guild.iconURL())
+        .setTitle(text.embedTitle
+            .replace("{{ username }}", message.author.username)
+            .replace("{{ messageContent }}", message.content)
+            .replace("{{ serverName }}", config.serverName))
+        .setDescription(text.embedDescription.replace("{{ ip }}", config.serverIp))
+        .setFooter(config.serverName, guild.iconURL());
 
         message.delete({timeout: 15000});
 
         let channel;
         try {
             channel = message.author.dmChannel || await message.author.createDM();
-            message.channel.send('Verstuurt in DM').then(msg => msg.delete({timeout: 15000}));
+            message.channel.send(returnText.sendInDm).then(msg => msg.delete({timeout: 15000}));
         } catch (e) {
             channel = message.channel;
         }

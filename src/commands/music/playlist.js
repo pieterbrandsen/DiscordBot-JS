@@ -4,30 +4,35 @@ const { music } = require("../../../user/config");
 const YouTubeAPI = require("simple-youtube-api");
 const youtube = new YouTubeAPI(music.YOUTUBE_API_KEY);
 
+const languageConfig = require(`../../../user/languages/${require('../../../user/config').language}`);
+const commandObject = languageConfig.commands.music.playlist;
+const commandText = commandObject.command;
+const text = commandObject.text;
+const returnText = commandObject.returnText;
+const logText = commandObject.logText;
+
 module.exports = {
-  name: "playlist",
-  cooldown: 3,
-  aliases: ["pl"],
-  description: "Play a playlist from youtube",
-  async execute(client, message, args) {
-    const { PRUNING } = require("../config.json");
+  name: commandText.name,
+  description: commandText.description,
+  usage: commandText.usage,
+	aliases: commandText.aliases,
+  example: commandText.example,
+	args: commandText.args,
+  permission: commandText.permission,
+  async execute(client, message, args, {config}) {
     const { channel } = message.member.voice;
 
     const serverQueue = message.client.queue.get(message.guild.id);
     if (serverQueue && channel !== message.guild.me.voice.channel)
-      return message.reply(`You must be in the same channel as ${message.client.user}`).catch(console.error);
+      return message.reply(returnText.wrongVoiceChannel).catch(console.error);
 
-    if (!args.length)
-      return message
-        .reply(`Usage: ${message.client.prefix}playlist <YouTube Playlist URL | Playlist Name>`)
-        .catch(console.error);
-    if (!channel) return message.reply("You need to join a voice channel first!").catch(console.error);
+    if (!channel) return message.reply(returnText.notInVoiceChannel).catch(console.error);
 
     const permissions = channel.permissionsFor(message.client.user);
     if (!permissions.has("CONNECT"))
-      return message.reply("Cannot connect to voice channel, missing permissions");
+      return message.reply(returnText.missingConnectPerm);
     if (!permissions.has("SPEAK"))
-      return message.reply("I cannot speak in this voice channel, make sure I have the proper permissions!");
+      return message.reply(returnText.missingSpeakPerm);
 
     const search = args.join(" ");
     const pattern = /^.*(youtu.be\/|list=)([^#\&\?]*).*/gi;
@@ -54,7 +59,7 @@ module.exports = {
         videos = await playlist.getVideos(music.MAX_PLAYLIST_SIZE || 10, { part: "snippet" });
       } catch (error) {
         console.error(error);
-        return message.reply("Playlist not found :(").catch(console.error);
+        return message.reply(returnText.couldNotFindPlayList).catch(console.error);
       }
     } else {
       try {
@@ -63,7 +68,7 @@ module.exports = {
         videos = await playlist.getVideos(music.MAX_PLAYLIST_SIZE || 10, { part: "snippet" });
       } catch (error) {
         console.error(error);
-        return message.reply("Playlist not found :(").catch(console.error);
+        return message.reply(returnText.couldNotFindPlayList).catch(console.error);
       }
     }
 
@@ -76,9 +81,8 @@ module.exports = {
 
       if (serverQueue) {
         serverQueue.songs.push(song);
-        if (!PRUNING)
           message.channel
-            .send(`✅ **${song.title}** has been added to the queue by ${message.author}`)
+            .send(returnText.addedToQueue.replace("{{ songTitle }}", song.title).replace("{{ author }}", message.author))
             .catch(console.error);
       } else {
         queueConstruct.songs.push(song);
@@ -88,17 +92,14 @@ module.exports = {
     let playlistEmbed = new MessageEmbed()
       .setTitle(`${playlist.title}`)
       .setURL(playlist.url)
-      .setColor("#F8AA2A")
-      .setTimestamp();
+      .setColor(config.colour)
+      .setFooter(config.serverName, message.guild.iconURL());
 
-    if (!PRUNING) {
       playlistEmbed.setDescription(queueConstruct.songs.map((song, index) => `${index + 1}. ${song.title}`));
       if (playlistEmbed.description.length >= 2048)
-        playlistEmbed.description =
-          playlistEmbed.description.substr(0, 2007) + "\nPlaylist larger than character limit...";
-    }
+        playlistEmbed.description = returnText.playlistIsTooLong.replace("{{ embedDescription }}", playlistEmbed.description.substr(0, 1900));
 
-    message.channel.send(`${message.author} Started a playlist`, playlistEmbed);
+    message.channel.send(returnText.startedPlaylist.replace("{{ author }}", message.author), playlistEmbed);
 
     if (!serverQueue) message.client.queue.set(message.guild.id, queueConstruct);
 
@@ -111,7 +112,7 @@ module.exports = {
         console.error(error);
         message.client.queue.delete(message.guild.id);
         await channel.leave();
-        return message.channel.send(`Could not join the channel: ${error}`).catch(console.error);
+        return message.channel.send(returnText.missingConnectPerm).catch(console.error);
       }
     }
   }

@@ -1,9 +1,15 @@
+const Canvas = require('canvas');
+
 const { MessageAttachment, MessageEmbed } = require('discord.js');
 const ChildLogger = require('leekslazylogger').ChildLogger;
 const log = new ChildLogger();
 
+const languageConfig = require(`../../user/languages/${require('../../user/config').language}`);
+const eventObject = languageConfig.events.guildMemberAdd;
+const text = eventObject.text;
+const returnText = eventObject.returnText;
+const logText = eventObject.logText;
 
-const Canvas = require('canvas');
 
 // Pass the entire Canvas object because you'll need to access its width, as well its context
 const applyText = (canvas, text) => {
@@ -25,38 +31,38 @@ const applyText = (canvas, text) => {
 module.exports = {
     event: 'guildMemberAdd',
     async execute(client, [member], {config}) {
-        log.info(`New User "${member.user.username}" has joined "${member.guild.name}"` );
-        require('../modules/updater.js').execute(client, config);
+        log.info(logText.newUserJoined.replace("{{ username }}", member.user.username).replace("{{ guildName }}", member.config.serverName));
+        //require('../modules/updater.js').execute(client, config);
 
         if (!config.welcome.enabled) return;
 
-		const guild = client.guilds.cache.get(config.guild);
+		const guild = member.guild;
 
 
         if (member.user.bot) return;
 
-        const DMMessageTitle = config.welcome.DMMessageTitle.replace('{{ userName }}', member.user.username);
-        const DMMessageDescription = config.welcome.DMMessageDescription.replace('{{ guild }}', guild);
-        const DMMessageFooter = config.welcome.DMMessageFooter.replace('{{ guild }}', guild);
+        const DmMessageTitle = returnText.DmMessageTitle.replace('{{ username }}', member.user.username);
+        const DmMessageDescription = returnText.DmMessageDescription.replace('{{ serverName }}', config.serverName);
+        const DmMessageFooter = returnText.DmMessageFooter.replace('{{ serverName }}', config.serverName);
 
 
-        let DMMessageEmbed = new MessageEmbed();
-        DMMessageEmbed.setColor(config.colour)
-        DMMessageEmbed.setTitle(DMMessageTitle);
-        DMMessageEmbed.setDescription(DMMessageDescription);
-        DMMessageEmbed.setFooter(DMMessageFooter);
+        let DmMessageEmbed = new MessageEmbed();
+        DmMessageEmbed.setColor(config.colour)
+        DmMessageEmbed.setTitle(DmMessageTitle);
+        DmMessageEmbed.setDescription(DmMessageDescription);
+        DmMessageEmbed.setFooter(DmMessageFooter);
 
-        for (let i = 0; i < config.welcome.DMMessageFields.length; i++) {
-            const description = config.welcome.DMMessageFields[i]
-            const link = config.welcome.DMMessageFieldLinks[i]
+        for (let i = 0; i < returnText.DMMessageFields.length; i++) {
+            const description = returnText.DMMessageFields[i]
+            const link = returnText.DMMessageFieldLinks[i]
             .replace('{{ announcements }}', client.channels.cache.get(config.announcementsChannelId))
             .replace('{{ general }}', client.channels.cache.get(config.generalChannelId))
             .replace('{{ ticketChannel }}', client.channels.cache.get(config.ticketCreateChannelId));
 
-            DMMessageEmbed.addField(description, link, true);
+            DmMessageEmbed.addField(description, link, true);
         }
-        let textMessageNumber = Math.floor(Math.random() * Math.floor(config.welcome.message.length));
-        let textMessage = config.welcome.message[textMessageNumber]
+        let textMessageNumber = Math.floor(Math.random() * Math.floor(text.welcomeMessage.length));
+        let textMessage = text.welcomeMessage[textMessageNumber]
         .replace('{{ tag }}', member);
 
 
@@ -80,7 +86,7 @@ module.exports = {
         // Slightly smaller text placed above the member's display name
         ctx.font = '28px sans-serif';
         ctx.fillStyle = '#ffffff';
-        ctx.fillText('Welkom op de server,', canvas.width / 2.5, canvas.height / 3.5);
+        ctx.fillText(text.welcomeToServer, canvas.width / 2.5, canvas.height / 3.5);
     
         // Add an exclamation point here and below
         ctx.font = applyText(canvas, `${member.displayName}!`);
@@ -98,8 +104,8 @@ module.exports = {
     
         const attachment = new MessageAttachment(canvas.toBuffer(), 'welcome-image.png');
 
-        let m = await channel.send(DMMessageEmbed);
-        m.delete({timeout: 60000});
+        let m = await channel.send(DmMessageEmbed);
+        m.delete({timeout: 360000});
 
         member.guild.channels.cache.get(config.welcome.channelId).send(
             textMessage,
