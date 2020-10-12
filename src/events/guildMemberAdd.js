@@ -31,7 +31,7 @@ const applyText = (canvas, text) => {
 module.exports = {
     event: 'guildMemberAdd',
     async execute(client, [member], {config}) {
-        log.info(logText.newUserJoined.replace("{{ username }}", member.user.username).replace("{{ guildName }}", member.config.serverName));
+        log.info(logText.newUserJoined.replace("{{ username }}", member.user.username).replace("{{ guildName }}", config.serverName));
         //require('../modules/updater.js').execute(client, config);
 
         if (!config.welcome.enabled) return;

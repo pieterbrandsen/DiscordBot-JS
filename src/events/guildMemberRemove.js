@@ -10,7 +10,7 @@ const logText = eventObject.logText;
 module.exports = {
     event: 'guildMemberRemove',
     async execute(client, [member], {config}) {
-        log.info(logText.userLeft.replace("{{ username }}", member.user.username).replace("{{ guildName }}", member.config.serverName));
+        log.info(logText.userLeft.replace("{{ username }}", member.user.username).replace("{{ guildName }}", config.serverName));
         require('../modules/updater.js').execute(client, config);
         
         if (!config.leave.enabled) return;
