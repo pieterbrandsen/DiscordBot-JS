@@ -28,7 +28,7 @@ module.exports = {
 
 
 	music: {
-		YOUTUBE_API_KEY: "AIzaSyDln0n84Xeq_xQDCFYpf6jMlI1hkw-G9L8",
+		YOUTUBE_API_KEY: "",
 		SOUNDCLOUD_CLIENT_ID: "",
 		MAX_PLAYLIST_SIZE: 50,
 		PRUNING: true
