@@ -6,8 +6,8 @@
 	"main": "src/index.js",
 	"author": "Pieter Brandsen",
 	"dependencies": {
-		"@eartharoid/dtf": "^1.0.8",
 		"@discordjs/opus": "^0.3.3",
+		"@eartharoid/dtf": "^1.0.7",
 		"boxen": "^4.2.0",
 		"discord-canvas": "^1.3.2",
 		"discord.js": "^12.4.1",
